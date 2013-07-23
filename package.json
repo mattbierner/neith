@@ -1,0 +1,18 @@
+{
+    "name": "neith",
+    "version": "0.0.0",
+    "description": "Javascript Zipper Library",
+    "main": "lib/neith.js",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/mattbierner/neith.js.git"
+    },
+    "keywords": [
+        "zipper",
+        "data structure",
+        "tree",
+        "functional"
+    ],
+    "author": "Matt Bierner",
+    "license": "MIT"
+}

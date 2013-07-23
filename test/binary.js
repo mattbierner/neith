@@ -25,13 +25,21 @@ Binary.prototype.setChild = function(name, child) {
 
 Binary.prototype.construct = function(x, children) {
     return new Binary(x.value,
-        children.hasOwnProperty('left') ? children.left : x.left,
-        children.hasOwnProperty('right') ? children.right : x.right)
+        children.hasOwnProperty('left') ? children.left : null,
+        children.hasOwnProperty('right') ? children.right : null)
 };
 
 
+var walk = function(root, path) {
+    path = path || [];
+    return (root ?
+        walk(root.right, walk(root.left, path.concat(root.value))) :
+        path);
+};
+
 return {
-    'Binary': Binary
+    'Binary': Binary,
+    'walk': walk
 };
 
 });

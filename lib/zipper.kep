@@ -1,5 +1,17 @@
+/**
+ * @fileOverview
+ */
 static define;
-define([], function() {
+define([],
+function() {
+//"use strict";
+
+var call = Function.prototype.bind.bind(Function.prototype.call);
+
+var concat = call(Array.prototype.concat);
+var map = call(Array.prototype.map);
+var slice = call(Array.prototype.slice);
+var reduce = call(Array.prototype.reduce);
 
 /* Context
  ******************************************************************************/
@@ -23,7 +35,6 @@ Context.setLoc = \ctx, loc ->
         ctx.getChildren,
         ctx.getChild,
         ctx.constructNode);
-
 
 /* Loc
  ******************************************************************************/
@@ -66,14 +77,39 @@ var hasParent = \ctx -> getLoc(ctx).parent !== null;
 
 var getPath = \ctx -> getLoc(ctx).path;
 
+var pushPath = \ctx, x -> concat([x], getPath(ctx));
+
+var popPath = \ctx -> slice(getPath(ctx), 1);
+
+var construct = \ctx, parent, children ->
+    ctx.constructNode(ctx, parent, children);
+
 var constructParent = \ctx -> 
     ctx.constructNode(
-        getFocus(getParent(ctx)),
-        ctx.loc.left.concat(Pair(ctx.loc.path[0], ctx.loc.focus), ctx.loc.right)
+        getParent(ctx).focus,
+        concat(ctx.loc.left, Pair(ctx.loc.path[0], ctx.loc.focus), ctx.loc.right)
             .reduce(\p, c -> { p[c.key] = c.value; return p; }, {}));
 
+/* 
+ ******************************************************************************/
+/**
+ * Get ordered path to the current node.
 
-/* Movement
+ */
+var path = \ctx -> getLoc(ctx).left;
+
+/**
+ * Get ordered list of the current node's left siblings.
+
+ */
+var lefts = \ctx -> getLoc(ctx).left;
+
+/**
+ * Get ordered list of the current node's right siblings.
+ */
+var rights = \ctx -> getLoc(ctx).right;
+
+/* Primitive Movement
  ******************************************************************************/
 /**
  * Move to the parent of the current node.
@@ -81,31 +117,34 @@ var constructParent = \ctx ->
  * Returns null if the current node has no parent.
  */
 var up = \ctx ->
-    (hasParent(ctx) ?
+    (!hasParent(ctx) ? null :
         Context.setLoc(
             ctx,
             Loc.setFocus(
-                getLoc(getParent(ctx)),
-                constructParent(ctx))) :
-        null);
+                getParent(ctx),
+                constructParent(ctx))));
 
 /**
  * Move downwards to the leftmost child of the current node.
  * 
  * Returns null if the current node has no children.
  */
-var down = \ctx -> (hasChildren(ctx) ?
-    let children = getChildren(ctx) in
-        Context.setLoc(ctx, new Loc(
-            getChild(ctx, children[0]),
-            ctx,
-            [children[0]].concat(ctx.path),
-            [],
-            children.slice(1).map(\x -> Pair(x, getChild(ctx, x))))) :
-    null);
+var down = \ctx ->
+    (!hasChildren(ctx) ? null :
+        let
+            children = getChildren(ctx)
+        in
+            Context.setLoc(
+                ctx,
+                new Loc(
+                    getChild(ctx, children[0]),
+                    getLoc(ctx),
+                    pushPath(ctx, children[0]),
+                    [],
+                    children.slice(1).map(\x -> Pair(x, getChild(ctx, x))))));
 
 /**
- *  Move left to the next left sibling of the current node.
+ * Move left to the next left sibling of the current node.
  * 
  * Returns null if there are no left siblings.
  */
@@ -122,26 +161,60 @@ var left = \loc -> loc;/*
         null);*/
 
 /**
- *  Move right to the next right sibling of the current node.
+ * Move right to the next right sibling of the current node.
  * 
  * Returns null if there are no right siblings.
  */
 var right = \ctx ->
-    Context.setLoc(ctx, new Loc(
-        getFocus(getParent(ctx))[ctx.loc.right[0].key],
-        getParent(ctx),
-        [ctx.loc.right[0]].concat(ctx.loc.path),
-        ctx.loc.left.concat(ctx.loc.path[0].key),
-        ctx.loc.right.slice(1)));
+    let
+        rs = rights(ctx),
+        r = rs[0]
+    in
+        (!rs.length ? null :
+            Context.setLoc(ctx, new Loc(
+                r.value,
+                getParent(ctx),
+                concat([r.key], slice(getPath(ctx, 1))),
+                concat(ctx.loc.left, Pair(getPath(ctx)[0], getFocus(ctx))),
+                slice(ctx.loc.right, 1))));
+
+/*
+ ******************************************************************************/
+
+/* Compound Movement
+ ******************************************************************************/
+/**
+ * Move to the root of the tree.
+ * 
+ * Returns the current node if it is the root.
+ */
+var root = \ctx ->
+    let parent = up(ctx) in
+        (parent ? root(parent) : ctx);
 
 /**
- *  Move to the root of the tree.
+ * Move to the leftmost sibling of the current node.
+ * 
+ * Returns the current node if it has no left siblings.
  */
-var root = \ctx -> let parent = up(ctx) in
-    (parent ? root(parent) : ctx);
+var leftmost = \ctx ->
+    let l = left(ctx) in
+        (l ? leftmost(l) : ctx);
+
+/**
+ * Move to the rightmost sibling of the current node.
+ * 
+ * Returns the current node if it has not right are no left siblings.
+ */
+var rightmost = \ctx ->
+    let r = right(ctx) in
+        (r ? rightmost(r) : ctx);
+
+/* Labeled Movement
+ ******************************************************************************/
 
 
-/* Editing
+/* Basic Editing
  ******************************************************************************/
 /**
  * Get the current node.
@@ -152,34 +225,32 @@ var getNode = getFocus;
  * Replace current node with `node`.
  */
 var setNode = \ctx, node ->
-    Context.setLoc(ctx, new Loc(
-        node,
-        ctx.loc.parent,
-        ctx.loc.path,
-        ctx.loc.left,
-        ctx.loc.right));
+    Context.setLoc(ctx, Loc.setFocus(getLoc(ctx), node));
 
 /**
  * Modify current node with function `f` and replace it with result.
  */
-var modifyNode = \ctx, f -> setNode(ctx, f(getNode(ctx)));
+var modifyNode = \ctx, f ->
+    setNode(ctx, f(getNode(ctx)));
 
 /**
  * 
  */
-var insertLeft = \ctx, node ->
-    Context.setLoc(ctx
-        );
-
-/* Zippers
- ******************************************************************************/
+var insertLeft;
 
 
-var path = \loc -> loc.path;
+var insertRight;
 
-var lefts = \loc -> loc.left;
+/**
+ * 
+ */
+var insertChild;
 
-var rights = \loc -> loc.right;
+/**
+ * 
+ */
+var appendChild;
+
 
 /* Zippers
  ******************************************************************************/
@@ -193,14 +264,9 @@ var rights = \loc -> loc.right;
  * @param makeNode Function taking a node and map of keys to children and returns
  *    a new node from these children.
  */
-var zipper = \focus, getChildren, getChild, constructNode ->
+var zipper = \root, getChildren, getChild, constructNode ->
     new Context(
-        new Loc(
-            focus,
-            null,
-            [],
-            [],
-            []),
+        new Loc(root, null, [], [], []),
         getChildren,
         getChild,
         constructNode);
@@ -215,32 +281,34 @@ var treeZipper = let
 in
     \root -> zipper(root, getChildren, getChild, constructNode);
 
-/**
- * Create a zipper for a list.
- */
-var listZipper = \root -> treeZipper(root);
-
 /* Export
  ******************************************************************************/
 return {
     'Loc': Loc,
     
+// Primitive Movement
     'up': up,
     'down': down,
     'left': left,
     'right': right,
-    
-    'root': root,
 
+// Compound Movement
+    'root': root,
+    'leftmost': leftmost,
+    'rightmost': rightmost,
+
+// Editing
     'getNode': getNode,
     'setNode': setNode,
     'modifyNode': modifyNode,
     
-    
+// State
     'lefts': lefts,
     'rights': rights,
-    
-    'zipper': treeZipper
+
+// Zipper Creation
+    'zipper': zipper,
+    'treeZipper': treeZipper
 };
 
 });
