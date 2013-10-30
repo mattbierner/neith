@@ -74,10 +74,10 @@ function(zipper,
                         zipper.getNode(
                             zipper.root(
                                 zipper.setNode(
-                                    zipper.right(zipper.down(binary.zipper(binary1))),
                                     $(10,
                                         $(11, null, null),
-                                        $(12, null, null)))))),
+                                        $(12, null, null)),
+                                    zipper.right(zipper.down(binary.zipper(binary1))))))),
                     [1, 2, 3, 4, 5, 10, 11, 12]);
             }],
             ["Set to empty",
@@ -87,8 +87,8 @@ function(zipper,
                         zipper.getNode(
                             zipper.root(
                                 zipper.setNode(
-                                    zipper.right(zipper.down(binary.zipper(binary1))),
-                                    null)))),
+                                    null,
+                                    zipper.right(zipper.down(binary.zipper(binary1))))))),
                     [1, 2, 3, 4, 5]);
             }],
             ["modify Node",
@@ -98,10 +98,10 @@ function(zipper,
                         zipper.getNode(
                             zipper.root(
                                 zipper.modifyNode(
-                                    zipper.right(zipper.down(binary.zipper(binary1))),
                                     function(x) {
                                         return $(x.value * 10, x.left, x.right)
-                                    })))),
+                                    },
+                                    zipper.right(zipper.down(binary.zipper(binary1))))))),
                     [1, 2, 3, 4, 5, 60, 7, 8]);
             }],
             
@@ -112,8 +112,8 @@ function(zipper,
                         zipper.getNode(
                             zipper.root(
                                 zipper.setNode(
-                                    zipper.right(zipper.down(nary.zipper(nary1))),
-                                    $n(100, {}))))),
+                                    $n(100, {}),
+                                    zipper.right(zipper.down(nary.zipper(nary1))))))),
                     [1, 2, 3, 4, 5, 100, 8]);
             }],
             ["Insert Left Nary",
@@ -123,11 +123,11 @@ function(zipper,
                         zipper.getNode(
                             zipper.root(
                                 zipper.insertLeft(
-                                    zipper.right(zipper.down(nary.zipper(nary1))),
                                     100,
                                     $n(100, {
                                         101: $n(101, {})
-                                    }))))),
+                                    }),
+                                    zipper.right(zipper.down(nary.zipper(nary1))))))),
                     [1, 2, 3, 4, 5, 100, 101, 6, 7, 8]);
             }],
             ["Insert Left Nary Stays on current node",
@@ -136,11 +136,11 @@ function(zipper,
                     nary.walk(
                         zipper.getNode(
                                 zipper.insertLeft(
-                                    zipper.right(zipper.down(nary.zipper(nary1))),
                                     100,
                                     $n(100, {
                                         101: $n(101, {})
-                                    })))),
+                                    }),
+                                    zipper.right(zipper.down(nary.zipper(nary1)))))),
                     [6, 7]);
             }],
             ["Insert Left Nary at leftmost",
@@ -150,11 +150,11 @@ function(zipper,
                         zipper.getNode(
                             zipper.root(
                                 zipper.insertLeft(
-                                    zipper.down(nary.zipper(nary1)),
                                     100,
                                     $n(100, {
                                         101: $n(101, {})
-                                    }))))),
+                                    }),
+                                    zipper.down(nary.zipper(nary1)))))),
                     [1, 100, 101, 2, 3, 4, 5, 6, 7, 8]);
             }],
             
@@ -165,11 +165,11 @@ function(zipper,
                         zipper.getNode(
                             zipper.root(
                                 zipper.insertRight(
-                                    zipper.right(zipper.down(nary.zipper(nary1))),
                                     100,
                                     $n(100, {
                                         101: $n(101, {})
-                                    }))))),
+                                    }),
+                                    zipper.right(zipper.down(nary.zipper(nary1))))))),
                     [1, 2, 3, 4, 5, 6, 7, 100, 101, 8]);
             }],
             
@@ -181,11 +181,11 @@ function(zipper,
                         zipper.getNode(
                             zipper.root(
                                 zipper.appendChild(
-                                    zipper.right(zipper.down(nary.zipper(nary1))),
                                     100,
                                     $n(100, {
                                         101: $n(101, {})
-                                    }))))),
+                                    }),
+                                    zipper.right(zipper.down(nary.zipper(nary1))))))),
                     [1, 2, 3, 4, 5, 6, 7, 100, 101, 8]);
                 
                 assert.deepEqual(
@@ -193,11 +193,11 @@ function(zipper,
                         zipper.getNode(
                             zipper.root(
                                 zipper.appendChild(
-                                    zipper.down(zipper.down(nary.zipper(nary1))),
                                     100,
                                     $n(100, {
                                         101: $n(101, {})
-                                    }))))),
+                                    }),
+                                    zipper.down(zipper.down(nary.zipper(nary1))))))),
                     [1, 2, 3, 100, 101, 4, 5, 6, 7, 8]);
             }],
         ],

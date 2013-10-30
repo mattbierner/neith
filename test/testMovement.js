@@ -1,7 +1,11 @@
-define(['neith/zipper', 'binary'], function(zipper, binary){
+define(['neith/zipper', 'binary', 'nary'], function(zipper, binary, nary){
     
     var $ = function(val, l, r) {
         return new binary.Binary(val, l, r);
+    };
+    
+    var $n = function(val, children) {
+        return new nary.Nary(val, Object.keys(children), children);
     };
     
     var binary1 = $(1,
@@ -14,7 +18,20 @@ define(['neith/zipper', 'binary'], function(zipper, binary){
             $(7,
                 $(8, null, null),
                 null)));
-
+    
+    var nary1 = $n(1, {
+        2: $n(2, {
+            3: $n(3, {}),
+            4: $n(4, {
+                5: $n(5, {}),
+            }),
+        }),
+        6: $n(6, {
+            7: $n(7, {}),
+        }),
+        8: $n(8, {})
+    });
+    
     return {
         'module': "Movement",
         'tests': [
@@ -37,7 +54,9 @@ define(['neith/zipper', 'binary'], function(zipper, binary){
             function(){
                 assert.deepEqual(
                     binary.walk(zipper.getNode(zipper.root(
-                        zipper.setNode(zipper.down(binary.zipper(binary1)), $(10, null, $(11, null, null)))))),
+                        zipper.setNode(
+                            $(10, null, $(11, null, null)),
+                            zipper.down(binary.zipper(binary1)))))),
                     [1, 10, 11, 6, 7, 8]);
             }],
             
@@ -78,8 +97,8 @@ define(['neith/zipper', 'binary'], function(zipper, binary){
                     binary.walk(
                         zipper.getNode(zipper.root(
                             zipper.setNode(
-                                zipper.left(zipper.right(zipper.down(binary.zipper(binary1)))),
-                                $(10, null, null))))),
+                                $(10, null, null),
+                                zipper.left(zipper.right(zipper.down(binary.zipper(binary1)))))))),
                     [1, 10, 6, 7, 8]);
             }],
             
@@ -104,10 +123,42 @@ define(['neith/zipper', 'binary'], function(zipper, binary){
                     binary.walk(
                         zipper.getNode(zipper.root(
                             zipper.setNode(
-                                zipper.right(zipper.down(binary.zipper(binary1))),
-                                $(10, null, null))))),
+                                $(10, null, null),
+                                zipper.right(zipper.down(binary.zipper(binary1))))))),
                     [1, 2, 3, 4, 5, 10]);
             }],
+            
+            ["Move to child",
+            function(){
+                assert.deepEqual(
+                    zipper.getNode(
+                        zipper.child('7', zipper.child('6', nary.zipper(nary1)))).value,
+                    7);
+            }],
+            ["Move to non existant child",
+            function(){
+                assert.deepEqual(
+                    zipper.child('x', zipper.child('6', nary.zipper(nary1))),
+                    null);
+            }],
+            
+            ["Sibling",
+            function(){
+                assert.deepEqual(
+                    zipper.getNode(
+                        zipper.sibling('2', zipper.child('6', nary.zipper(nary1)))).value,
+                    2);
+                assert.deepEqual(
+                    zipper.getNode(
+                        zipper.sibling('8', zipper.child('6', nary.zipper(nary1)))).value,
+                    8);
+            }],
+            ["Empty Sibling",
+            function(){
+                assert.deepEqual(
+                    zipper.sibling('x', zipper.child('6', nary.zipper(nary1))),
+                    null);
+            }]
         ],
     };
 });
