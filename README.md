@@ -37,7 +37,6 @@ Include any AMD style module loader and load neith:
     </body>
 
 
-
 # Code
 parse.js is written in Javascript / Khepri. [Khepri][khepri] is a ECMAScript subset
 that, among other things, adds a shorted lambda function syntax. It is also
@@ -47,7 +46,6 @@ pretty much plain old Javascript.
 For now, both the .js and .kep versions of source code will be kept in 'lib/',
 but only Khepri sources will be developed and Javascript files will be
 generated from it.
-
 
 
 [Zippers]: http://www.haskell.org/haskellwiki/Zipper

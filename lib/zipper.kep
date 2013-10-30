@@ -423,7 +423,9 @@ setNode = \ctx, node ->
  * Modify current node with function `f` and replace it with result.
  */
 modifyNode = \ctx, f ->
-    setNode(ctx, f(getNode(ctx)));
+    setNode(
+        ctx,
+        f(getNode(ctx)));
 
 /**
  * Removes the current node. Moves to either the first right sibiling, or the
@@ -455,7 +457,13 @@ insertLeft = \ctx, name, node ->
 /**
  * Insert a sibling to the right of the current node. Stays on the current node.
  */
-insertRight;
+insertRight = \ctx, name, node ->
+    Context.setLoc(ctx, new Loc(
+        getFocus(ctx),
+        getParent(ctx),
+        path(ctx),
+        ctx.loc.left,
+        concat(Pair(name, node), ctx.loc.right)));
 
 /**
  * Insert to the right of the current node. Stays on the current node.
@@ -471,11 +479,13 @@ insertChild = \ctx, name, node ->
  * 
  */
 appendChild = \ctx, name, node ->
-    up(
-        insertRight(
-            rightmost(down(ctx)),
-            name,
-            node));
+    (hasChildren(ctx) ?
+        up(
+            insertRight(
+                rightmost(down(ctx)),
+                name,
+                node)) :
+        setNode(ctx, construct(ctx, ctx.loc.focus, [Pair(name, node)])));
 
 /* Zipper
  ******************************************************************************/
@@ -508,6 +518,5 @@ in
             getChild,
             construct,
             root);
-
 
 }

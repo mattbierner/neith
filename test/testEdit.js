@@ -130,6 +130,76 @@ function(zipper,
                                     }))))),
                     [1, 2, 3, 4, 5, 100, 101, 6, 7, 8]);
             }],
+            ["Insert Left Nary Stays on current node",
+            function(){
+                assert.deepEqual(
+                    nary.walk(
+                        zipper.getNode(
+                                zipper.insertLeft(
+                                    zipper.right(zipper.down(nary.zipper(nary1))),
+                                    100,
+                                    $n(100, {
+                                        101: $n(101, {})
+                                    })))),
+                    [6, 7]);
+            }],
+            ["Insert Left Nary at leftmost",
+            function(){
+                assert.deepEqual(
+                    nary.walk(
+                        zipper.getNode(
+                            zipper.root(
+                                zipper.insertLeft(
+                                    zipper.down(nary.zipper(nary1)),
+                                    100,
+                                    $n(100, {
+                                        101: $n(101, {})
+                                    }))))),
+                    [1, 100, 101, 2, 3, 4, 5, 6, 7, 8]);
+            }],
+            
+            ["Insert Right Nary",
+            function(){
+                assert.deepEqual(
+                    nary.walk(
+                        zipper.getNode(
+                            zipper.root(
+                                zipper.insertRight(
+                                    zipper.right(zipper.down(nary.zipper(nary1))),
+                                    100,
+                                    $n(100, {
+                                        101: $n(101, {})
+                                    }))))),
+                    [1, 2, 3, 4, 5, 6, 7, 100, 101, 8]);
+            }],
+            
+            
+            ["Append Child",
+            function(){
+                assert.deepEqual(
+                    nary.walk(
+                        zipper.getNode(
+                            zipper.root(
+                                zipper.appendChild(
+                                    zipper.right(zipper.down(nary.zipper(nary1))),
+                                    100,
+                                    $n(100, {
+                                        101: $n(101, {})
+                                    }))))),
+                    [1, 2, 3, 4, 5, 6, 7, 100, 101, 8]);
+                
+                assert.deepEqual(
+                    nary.walk(
+                        zipper.getNode(
+                            zipper.root(
+                                zipper.appendChild(
+                                    zipper.down(zipper.down(nary.zipper(nary1))),
+                                    100,
+                                    $n(100, {
+                                        101: $n(101, {})
+                                    }))))),
+                    [1, 2, 3, 100, 101, 4, 5, 6, 7, 8]);
+            }],
         ],
     };
 });
