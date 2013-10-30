@@ -21,55 +21,81 @@ define(['neith/zipper', 'binary'], function(zipper, binary){
             ["Simple down",
             function(){
                 assert.deepEqual(
-                    binary.walk(zipper.getNode(zipper.down(zipper.treeZipper(binary1)))),
+                    binary.walk(zipper.getNode(zipper.down(binary.zipper(binary1)))),
                     [2, 3, 4, 5]);
                 assert.deepEqual(
-                    binary.walk(zipper.getNode(zipper.down(zipper.down(zipper.treeZipper(binary1))))),
+                    binary.walk(zipper.getNode(zipper.down(zipper.down(binary.zipper(binary1))))),
                     [3]);
             }],
             ["Empty",
             function(){
                 assert.equal(
-                    zipper.getNode(zipper.down(zipper.treeZipper($(10, null, null)))),
+                    zipper.down(binary.zipper($(10, null, null))),
                     null);
             }],
             ["Edit",
             function(){
                 assert.deepEqual(
                     binary.walk(zipper.getNode(zipper.root(
-                        zipper.setNode(zipper.down(zipper.treeZipper(binary1)), $(10, null, $(11, null, null)))))),
+                        zipper.setNode(zipper.down(binary.zipper(binary1)), $(10, null, $(11, null, null)))))),
                     [1, 10, 11, 6, 7, 8]);
             }],
             
             ["Simple up",
             function(){
                 assert.deepEqual(
-                    binary.walk(zipper.getNode(zipper.up(zipper.down(zipper.treeZipper(binary1))))),
+                    binary.walk(zipper.getNode(zipper.up(zipper.down(binary.zipper(binary1))))),
                     [1, 2, 3, 4, 5, 6, 7, 8]);
                 assert.deepEqual(
-                    binary.walk(zipper.getNode(zipper.up(zipper.down(zipper.down(zipper.treeZipper(binary1)))))),
+                    binary.walk(zipper.getNode(zipper.up(zipper.down(zipper.down(binary.zipper(binary1)))))),
                     [2, 3, 4, 5]);
             }],
             ["Empty Up",
             function(){
                 assert.equal(
-                    zipper.up(zipper.treeZipper($(10, null, null))),
+                    zipper.up(binary.zipper($(10, null, null))),
                     null);
+            }],
+            
+            ["Simple Left",
+            function(){
+                assert.deepEqual(
+                    binary.walk(zipper.getNode(zipper.left(zipper.right(zipper.down(binary.zipper(binary1)))))),
+                    [2, 3, 4, 5]);
+                assert.deepEqual(
+                    binary.walk(zipper.getNode(zipper.left(zipper.right(zipper.down(zipper.left(zipper.right(zipper.down(binary.zipper(binary1))))))))),
+                    [3]);
+            }],
+            ["Empty Left",
+            function(){
+                assert.equal(
+                    zipper.left(binary.zipper(binary1)),
+                    null);
+            }],
+            ["Edit Left",
+            function(){
+                assert.deepEqual(
+                    binary.walk(
+                        zipper.getNode(zipper.root(
+                            zipper.setNode(
+                                zipper.left(zipper.right(zipper.down(binary.zipper(binary1)))),
+                                $(10, null, null))))),
+                    [1, 10, 6, 7, 8]);
             }],
             
             ["Simple Right",
             function(){
                 assert.deepEqual(
-                    binary.walk(zipper.getNode(zipper.right(zipper.down(zipper.treeZipper(binary1))))),
+                    binary.walk(zipper.getNode(zipper.right(zipper.down(binary.zipper(binary1))))),
                     [6, 7, 8]);
                 assert.deepEqual(
-                    binary.walk(zipper.getNode(zipper.right(zipper.down(zipper.down(zipper.treeZipper(binary1)))))),
+                    binary.walk(zipper.getNode(zipper.right(zipper.down(zipper.down(binary.zipper(binary1)))))),
                     [4, 5]);
             }],
             ["Empty",
             function(){
                 assert.equal(
-                    zipper.right(zipper.treeZipper(binary1)),
+                    zipper.right(binary.zipper(binary1)),
                     null);
             }],
             ["Edit Right",
@@ -78,7 +104,7 @@ define(['neith/zipper', 'binary'], function(zipper, binary){
                     binary.walk(
                         zipper.getNode(zipper.root(
                             zipper.setNode(
-                                zipper.right(zipper.down(zipper.treeZipper(binary1))),
+                                zipper.right(zipper.down(binary.zipper(binary1))),
                                 $(10, null, null))))),
                     [1, 2, 3, 4, 5, 10]);
             }],

@@ -16,8 +16,6 @@ Neith supports zippers for variations of n-ary ordered trees with labeled edges.
 
 # Using Neith
 
-## Dependencies ##
-
 ## With AMD ##
 Include any AMD style module loader and load neith:
 
@@ -37,6 +35,8 @@ Include any AMD style module loader and load neith:
             });
         </script>
     </body>
+
+
 
 # Code
 parse.js is written in Javascript / Khepri. [Khepri][khepri] is a ECMAScript subset

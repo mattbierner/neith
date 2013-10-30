@@ -1,11 +1,16 @@
-define([], function(){
+/**
+ * @fileOverview Basic binary tree for testing purposes.
+ */
+define(['neith/zipper'],
+function(zipper){
 
+/* Binary
+ ******************************************************************************/
 var Binary = function(value, left, right) {
     this.value = value;
     this.left = left;
     this.right = right;
 };
-Binary.prototype.children = ['left', 'right'];
 
 Binary.prototype.print = function() {
     return '{' + this.value + " " +
@@ -13,20 +18,10 @@ Binary.prototype.print = function() {
         (this.right ? this.right.print() : '{}') + '}';
 };
 
-Binary.prototype.setChild = function(name, child) {
-    switch (name) {
-    case 'left':
-        return new Binary(this.value, child, this.right);
-    case 'right':
-        return new Binary(this.value, this.left, child);
-    }
-    throw name;
-};
-
-Binary.prototype.construct = function(x, children) {
+Binary.construct = function(x, _, children) {
     return new Binary(x.value,
-        children.hasOwnProperty('left') ? children.left : null,
-        children.hasOwnProperty('right') ? children.right : null)
+        children.left,
+        children.right)
 };
 
 
@@ -37,9 +32,27 @@ var walk = function(root, path) {
         path);
 };
 
+var binaryZipper = function(root) {
+    return zipper.treeZipper(
+        function(x) {
+            if (x.left && x.right)
+                return ['left', 'right'];
+            else if (x.left)
+                return ['left'];
+            else if (x.right)
+                return ['right'];
+            return [];
+        },
+        Binary.construct,
+        root);
+};
+
+/* Export
+ ******************************************************************************/
 return {
     'Binary': Binary,
-    'walk': walk
+    'walk': walk,
+    'zipper': binaryZipper
 };
 
 });
