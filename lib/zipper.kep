@@ -2,9 +2,6 @@
  * @fileOverview Zipper structures and operations.
  */
 package (
-    Loc,
-    Context,
-    
 // State
     path,
     lefts,
@@ -67,16 +64,21 @@ var map = call(Array.prototype.map);
 var slice = call(Array.prototype.slice);
 var reduce = call(Array.prototype.reduce);
 
-/* Context
+var length = \x -> x ? x.length : 0;
+
+var pop = \x -> slice(x, 1);
+
+/* Records
  ******************************************************************************/
 var Pair = \key, value -> ({'key': key, 'value': value});
 
-/* Context
- ******************************************************************************/
-/**
- * 
- */
-Context = function(loc, getChildren, getChild, constructNode) {
+var key = \x -> x.key;
+
+var value = \x -> x.value;
+
+// Context
+////////////////////////////////////////
+var Context = function(loc, getChildren, getChild, constructNode) {
     this.loc = loc;
     this.getChildren = getChildren;
     this.getChild = getChild;
@@ -90,12 +92,9 @@ Context.setLoc = \ctx, loc ->
         ctx.getChild,
         ctx.constructNode);
 
-/* Loc
- ******************************************************************************/
-/**
- * 
- */
-Loc = function(focus, parent, path, left, right) {
+// Loc
+////////////////////////////////////////
+var Loc = function(focus, parent, path, left, right) {
     this.focus = focus;
     this.parent = parent;
     this.path = path;
@@ -153,24 +152,22 @@ var getFocus = \ctx -> getLoc(ctx).focus;
  ******************************************************************************/
 var pushPath = \x, ctx -> concat([x], path(ctx));
 
-var popPath = \ctx -> slice(path(ctx), 1);
+var popPath = path \> pop;
 
-var setPath = \x, ctx ->
-    concat(x, slice(path(ctx, 1)));
+var setPath = \x, ctx -> concat(x, pop(path(ctx)));
 
 /* Reconstruction
  ******************************************************************************/
 var construct = let
-    m = \x -> x.key,
     reducer = \p, c -> {
-        p[c.key] = c.value;
+        p[key(c)] = value(c);
         return p;
     }
 in
     \ctx, parent, children ->
         ctx.constructNode(
             parent,
-            map(children, m),
+            map(children, key),
             reduce(children, reducer, {}));
 
 var constructParent = \ctx -> 
@@ -178,7 +175,7 @@ var constructParent = \ctx ->
         getParent(ctx).focus,
         concat(
             ctx.loc.left,
-            Pair(ctx.loc.path[0], ctx.loc.focus),
+            Pair(ctx.loc.path[0], getFocus(ctx)),
             ctx.loc.right));
 
 /* Context Query
@@ -211,7 +208,7 @@ getChildren = \ctx -> ctx.getChildren(getFocus(ctx));
 /**
  * Get the child node for `edge` of focus.
  */
-getChild = \ctx, edge -> ctx.getChild(getFocus(ctx), edge);
+getChild = \edge, ctx -> ctx.getChild(getFocus(ctx), edge);
 
 /**
  * Get the parent of the focus.
@@ -223,12 +220,12 @@ getParent = \ctx -> getLoc(ctx).parent;
 /**
  * Does the focus have any children?
  */
-hasChildren = \ctx -> !!getChildren(ctx).length;
+hasChildren = getChildren \> length;
 
 /**
  * Does the focus have a parent?
  */
-hasParent = \ctx -> getParent(ctx) !== null;
+hasParent = getParent \> (!==, null);;
 
 /**
  * Is the focus a root node?
@@ -248,12 +245,12 @@ isLeaf = hasChildren \> (!);
 /**
  * Is the focus the leftmost of its siblings?
  */
-isFirst = \ctx -> lefts(ctx).length === 0;
+isFirst = lefts \> length \> (===, 0);
 
 /**
  * Is the focus the rightmost of its siblings?
  */
-isLast = \ctx -> rights(ctx).length === 0;
+isLast = rights \> length \> (===, 0);
 
 /* Basic Movement
  ******************************************************************************/
@@ -284,11 +281,11 @@ down = \ctx ->
             setLoc(
                 ctx,
                 new Loc(
-                    getChild(ctx, child),
+                    getChild(child, ctx),
                     getLoc(ctx),
                     pushPath(child, ctx),
                     [],
-                    slice(children, 1).map(\x -> Pair(x, getChild(ctx, x))))));
+                    pop(children).map(\x -> Pair(x, getChild(x, ctx))))));
 
 /**
  * Move left to the next left sibling of the focus.
@@ -303,13 +300,13 @@ in
     (!ls.length ? null :
         setLoc(ctx,
             new Loc(
-                l.value,
+                value(l),
                 getParent(ctx),
-                setPath(l.key, ctx),
-                slice(ctx.loc.left, 1),
+                setPath(key(l), ctx),
+                pop(lefts(ctx)),
                 concat(
                     Pair(path(ctx)[0], getFocus(ctx)),
-                    ctx.loc.right))));
+                    rights(ctx)))));
 
 /**
  * Move right to the next right sibling of the focus.
@@ -324,11 +321,13 @@ in
     (!rs.length ? null :
         setLoc(ctx,
             new Loc(
-                r.value,
+                value(r),
                 getParent(ctx),
-                setPath(r.key, ctx),
-                concat(ctx.loc.left, Pair(path(ctx)[0], getFocus(ctx))),
-                slice(ctx.loc.right, 1))));
+                setPath(key(r), ctx),
+                concat(
+                    lefts(ctx),
+                    Pair(path(ctx)[0], getFocus(ctx))),
+                pop(rights(ctx)))));
 
 /* Compound Movement
  ******************************************************************************/
@@ -366,9 +365,7 @@ rightmost = \ctx ->
  */
 leftLeaf = \ctx ->
     let child = down(ctx) in
-        (child ?
-            leftLeaf(child) :
-            ctx);
+        (child ? leftLeaf(child) : ctx);
 
 /**
  * Move to the rightmost leaf of the focus.
@@ -491,11 +488,11 @@ removeNode = \ctx ->
     (!hasParent(ctx) ? null :
         (isLast(ctx) ?
             (isFirst(ctx) ?
-                construct(ctx, ctx.loc.parent, []) :
+                constructParent(ctx) :
                 setRights(left(ctx), [])) :
             modifyLefts(
                 right(ctx),
-                \lefts -> slice(lefts, 0 , lefts.length - 2))));
+                \lefts{length} -> slice(lefts, 0 , length - 2))));
 
 /**
  * Insert a sibling to the left of the focus. Stays in the current location.
@@ -516,13 +513,14 @@ insertRight = \edge, node, ctx ->
             rs));
 
 /**
- * Insert a child at the left for the focus. Stays in the current location..
+ * Insert a child at the left for the focus. Stays in the current location.
  */
 insertChild = \edge, node, ctx ->
     (ctx
         |> down
         |> (insertLeft, edge, node)
         |> up);
+
 /**
  * Insert a child at the right for the focus. Stays in current location.
  */
@@ -534,7 +532,7 @@ appendChild = \edge, node, ctx ->
             |> (insertRight, edge, node)
             |> up) :
         setNode(
-            construct(ctx, ctx.loc.focus, [Pair(edge, node)]),
+            construct(ctx, getFocus(ctx), [Pair(edge, node)]),
             ctx));
 
 /* Zipper
@@ -545,8 +543,8 @@ appendChild = \edge, node, ctx ->
  * @param edges Function taking a node and returning an array of edges
  *     the children of this node.
  * @param getChild Function taking a node and key and returning the child.
- * @param constructNode Function taking a node and map of keys to children and returns
- *    a new node from these children.
+ * @param constructNode Function taking a node, ordered list of edges, and map of
+ *    edges to children and returns a new node from these children.
  * @param focus Starting point and current context for the zipper.
  */
 zipper = \edges, getChild, constructNode, focus ->
