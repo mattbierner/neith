@@ -6,6 +6,7 @@ manipulation of immutable, hierarchical data structures through a formalized
 interface.
 
 Neith supports zippers for variations of n-ary ordered trees with labeled edges.
+Traversed data structures may be lazy and infintie.
 
 
 ## To Clone

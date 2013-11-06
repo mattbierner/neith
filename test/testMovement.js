@@ -46,8 +46,9 @@ define(['neith/zipper', 'binary', 'nary'], function(zipper, binary, nary){
             }],
             ["Empty",
             function(){
+                var z = zipper.down(binary.zipper($(10, null, null)));
                 assert.equal(
-                    zipper.down(binary.zipper($(10, null, null))),
+                    z,
                     null);
             }],
             ["Edit",

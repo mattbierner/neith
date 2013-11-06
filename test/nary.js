@@ -38,7 +38,6 @@ var naryZipper = function(root) {
         function(x, k) { return x.childValues[k]; },
         Nary.construct,
         root);
-    
 };
 
 /* Export

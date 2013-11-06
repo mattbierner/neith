@@ -56,7 +56,11 @@ package (
 // Zipper Creation
     zipper,
     treeZipper)
-{
+with
+    import 'nu/stream' stream{first, rest, isEmpty, 'end': NIL, foldl},
+    import 'nu/select' {skip}
+in {
+
 var call = Function.prototype.bind.bind(Function.prototype.call);
 
 var concat = call(Array.prototype.concat);
@@ -64,9 +68,12 @@ var map = call(Array.prototype.map);
 var slice = call(Array.prototype.slice);
 var reduce = call(Array.prototype.reduce);
 
-var length = \x -> x ? x.length : 0;
-
-var pop = \x -> slice(x, 1);
+var indexOf = \e, s ->
+    foldl(
+        \p, c, i ->
+            (p >= 0 ? p : (c === e ? i : p)),
+        -1,
+        s);
 
 /* Records
  ******************************************************************************/
@@ -102,7 +109,7 @@ var Loc = function(focus, parent, path, left, right) {
     this.right = right;
 };
 
-Loc.empty = new Loc(null, null, [], [], []);
+Loc.empty = new Loc(null, null, NIL, NIL, NIL);
 
 Loc.setFocus = \loc, focus ->
     new Loc(
@@ -150,11 +157,11 @@ var getFocus = \ctx -> getLoc(ctx).focus;
 
 /* Context Operations
  ******************************************************************************/
-var pushPath = \x, ctx -> concat([x], path(ctx));
+var pushPath = \x, ctx -> stream.cons(x, path(ctx));
 
-var popPath = path \> pop;
+var popPath = path \> rest;
 
-var setPath = \x, ctx -> concat(x, pop(path(ctx)));
+var setPath = \x, ctx -> stream.cons(x, rest(path(ctx)));
 
 /* Reconstruction
  ******************************************************************************/
@@ -167,15 +174,15 @@ in
     \ctx, parent, children ->
         ctx.constructNode(
             parent,
-            map(children, key),
-            reduce(children, reducer, {}));
+            stream.toArray(stream.map(key, children)),
+            stream.foldl(reducer, {}, children));
 
 var constructParent = \ctx -> 
     construct(ctx,
         getParent(ctx).focus,
-        concat(
+        stream.append(
             ctx.loc.left,
-            Pair(ctx.loc.path[0], getFocus(ctx)),
+            stream.cons(Pair(first(ctx.loc.path), getFocus(ctx)), NIL),
             ctx.loc.right));
 
 /* Context Query
@@ -203,7 +210,12 @@ rights = \ctx -> getLoc(ctx).right;
 /**
  * Get order list of focus's child edges.
  */
-getChildren = \ctx -> ctx.getChildren(getFocus(ctx));
+getChildren = \ctx -> let
+    children  = ctx.getChildren(getFocus(ctx))
+in
+    (Array.isArray(children) ?
+        stream.from(children) :
+        children);
 
 /**
  * Get the child node for `edge` of focus.
@@ -220,17 +232,17 @@ getParent = \ctx -> getLoc(ctx).parent;
 /**
  * Does the focus have any children?
  */
-hasChildren = getChildren \> length;
+hasChildren = getChildren \> (!) <\ isEmpty;
 
 /**
  * Does the focus have a parent?
  */
-hasParent = getParent \> (!==, null);;
+hasParent = getParent \> (!==, null);
 
 /**
  * Is the focus a root node?
  */
-isRoot = hasParent \> (!);
+isRoot = (!) <\ hasParent;
 
 /**
  * Is the focus a child node?
@@ -240,17 +252,17 @@ isChild = hasParent;
 /**
  * Is the focus a leaf node?
  */
-isLeaf = hasChildren \> (!);
+isLeaf = (!) <\ hasChildren;
 
 /**
  * Is the focus the leftmost of its siblings?
  */
-isFirst = lefts \> length \> (===, 0);
+isFirst = lefts \> isEmpty;
 
 /**
  * Is the focus the rightmost of its siblings?
  */
-isLast = rights \> length \> (===, 0);
+isLast = rights \> isEmpty;
 
 /* Basic Movement
  ******************************************************************************/
@@ -276,16 +288,16 @@ up = \ctx ->
 down = \ctx ->
     (!hasChildren(ctx) ? null :
         let
-            children[child] = getChildren(ctx)
+            children = getChildren(ctx),
+            child = first(children)
         in
-            setLoc(
-                ctx,
+            setLoc(ctx,
                 new Loc(
                     getChild(child, ctx),
                     getLoc(ctx),
                     pushPath(child, ctx),
-                    [],
-                    pop(children).map(\x -> Pair(x, getChild(x, ctx))))));
+                    NIL,
+                    stream.map(\x -> Pair(x, getChild(x, ctx)), rest(children)))));
 
 /**
  * Move left to the next left sibling of the focus.
@@ -295,18 +307,19 @@ down = \ctx ->
  * This is an order dependent operation.
  */
 left = \ctx -> let
-    ls[l] = lefts(ctx)
+    ls = lefts(ctx)
 in
-    (!ls.length ? null :
-        setLoc(ctx,
-            new Loc(
-                value(l),
-                getParent(ctx),
-                setPath(key(l), ctx),
-                pop(lefts(ctx)),
-                concat(
-                    Pair(path(ctx)[0], getFocus(ctx)),
-                    rights(ctx)))));
+    (isEmpty(ls) ? null :
+        let l = first(ls) in
+            setLoc(ctx,
+                new Loc(
+                    value(l),
+                    getParent(ctx),
+                    setPath(key(l), ctx),
+                    rest(lefts(ctx)),
+                    stream.cons(
+                        Pair(first(path(ctx)), getFocus(ctx)),
+                        rights(ctx)))));
 
 /**
  * Move right to the next right sibling of the focus.
@@ -316,18 +329,19 @@ in
  * This is an order dependent operation.
  */
 right = \ctx -> let
-    rs[r] = rights(ctx)
+    rs = rights(ctx)
 in
-    (!rs.length ? null :
-        setLoc(ctx,
-            new Loc(
-                value(r),
-                getParent(ctx),
-                setPath(key(r), ctx),
-                concat(
-                    lefts(ctx),
-                    Pair(path(ctx)[0], getFocus(ctx))),
-                pop(rights(ctx)))));
+    (isEmpty(rs) ? null :
+        let r = first(rs) in
+            setLoc(ctx,
+                new Loc(
+                    value(r),
+                    getParent(ctx),
+                    setPath(key(r), ctx),
+                    stream.append(
+                        lefts(ctx),
+                        stream.cons(Pair(first(path(ctx)), getFocus(ctx)), NIL)),
+                    rest(rights(ctx)))));
 
 /* Compound Movement
  ******************************************************************************/
@@ -438,7 +452,7 @@ in
  */
 child = \edge, ctx -> let
     children = getChildren(ctx),
-    index = children.indexOf(edge)
+    index = indexOf(edge, children)
 in
     (index === -1 ? null :
         nthChild(index, ctx));
@@ -480,35 +494,34 @@ modifyNode = \f, ctx ->
 
 /**
  * Removes the focus. Moves to either the first right sibiling, or the
- * first right sibiling or the parent.
+ * left right sibiling or the parent.
  * 
  * Returns null if the focus has no parent.
  */
 removeNode = \ctx ->
-    (!hasParent(ctx) ? null :
-        (isLast(ctx) ?
-            (isFirst(ctx) ?
-                constructParent(ctx) :
-                setRights(left(ctx), [])) :
-            modifyLefts(
-                right(ctx),
-                \lefts{length} -> slice(lefts, 0 , length - 2))));
+    (isLast(ctx) ?
+        (isFirst(ctx) ?
+            (!hasParent(ctx) ? null : constructParent(ctx)) :
+            setRights(left(ctx), NIL)) :
+        modifyLefts(
+            right(ctx),
+            (skip, 2)));
 
 /**
  * Insert a sibling to the left of the focus. Stays in the current location.
  */
 insertLeft = \name, node, ctx ->
     modifyLefts(ctx, \ls ->
-        concat(
+        stream.append(
             ls,
-            Pair(name, node)));
+            stream.cons(Pair(name, node), NIL)));
 
 /**
  * Insert a sibling to the right of the focus. Stays in the current location.
  */
 insertRight = \edge, node, ctx ->
     modifyRights(ctx, \rs ->
-        concat(
+        stream.cons(
             Pair(edge, node),
             rs));
 
@@ -532,7 +545,7 @@ appendChild = \edge, node, ctx ->
             |> (insertRight, edge, node)
             |> up) :
         setNode(
-            construct(ctx, getFocus(ctx), [Pair(edge, node)]),
+            construct(ctx, getFocus(ctx), stream.cons(Pair(edge, node), NIL)),
             ctx));
 
 /* Zipper
