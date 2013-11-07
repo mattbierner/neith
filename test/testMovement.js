@@ -1,9 +1,11 @@
 define(['neith/zipper',
         'neith/tree',
+        'nu/stream',
         'binary',
         'nary'],
 function(zipper,
         tree,
+        stream,
         binary,
         nary){
     
@@ -44,12 +46,22 @@ function(zipper,
         'tests': [
             ["Simple down",
             function(){
+                var z = zipper.down(binary.zipper(binary1));
+                
                 assert.deepEqual(
-                    binary.walk(tree.getNode(zipper.down(binary.zipper(binary1)))),
+                    binary.walk(tree.node(z)),
                     [2, 3, 4, 5]);
                 assert.deepEqual(
-                    binary.walk(tree.getNode(zipper.down(zipper.down(binary.zipper(binary1))))),
+                    stream.toArray(tree.edgePath(z)),
+                    ['left', null]);
+                
+                var z2 = zipper.down(z);
+                assert.deepEqual(
+                    binary.walk(tree.node(z2)),
                     [3]);
+                assert.deepEqual(
+                    stream.toArray(tree.edgePath(z2)),
+                    ['left', 'left', null]);
             }],
             ["Empty down",
             function(){
@@ -61,12 +73,22 @@ function(zipper,
 
             ["Simple up",
             function(){
+                var z = zipper.up(zipper.down(binary.zipper(binary1)));
+                
                 assert.deepEqual(
-                    binary.walk(tree.getNode(zipper.up(zipper.down(binary.zipper(binary1))))),
+                    binary.walk(tree.node(z)),
                     [1, 2, 3, 4, 5, 6, 7, 8]);
                 assert.deepEqual(
-                    binary.walk(tree.getNode(zipper.up(zipper.down(zipper.down(binary.zipper(binary1)))))),
+                    stream.toArray(tree.edgePath(z)),
+                    [null]);
+                
+                var z2 = zipper.up(zipper.down(zipper.down(binary.zipper(binary1))));
+                assert.deepEqual(
+                    binary.walk(tree.node(z2)),
                     [2, 3, 4, 5]);
+                assert.deepEqual(
+                    stream.toArray(tree.edgePath(z2)),
+                    ['left', null]);
             }],
             ["Empty Up",
             function(){
@@ -77,12 +99,21 @@ function(zipper,
             
             ["Simple Left",
             function(){
+                var z = zipper.left(zipper.right(zipper.down(binary.zipper(binary1))));
                 assert.deepEqual(
-                    binary.walk(tree.getNode(zipper.left(zipper.right(zipper.down(binary.zipper(binary1)))))),
+                    binary.walk(tree.node(z)),
                     [2, 3, 4, 5]);
                 assert.deepEqual(
-                    binary.walk(tree.getNode(zipper.left(zipper.right(zipper.down(zipper.left(zipper.right(zipper.down(binary.zipper(binary1))))))))),
+                    stream.toArray(tree.edgePath(z)),
+                    ['left', null]);
+                
+                var z2 = zipper.left(zipper.right(zipper.down(zipper.left(zipper.right(zipper.down(binary.zipper(binary1)))))));
+                assert.deepEqual(
+                    binary.walk(tree.node(z2)),
                     [3]);
+                assert.deepEqual(
+                    stream.toArray(tree.edgePath(z2)),
+                    ['left', 'left', null]);
             }],
             ["Empty Left",
             function(){
@@ -93,12 +124,21 @@ function(zipper,
 
             ["Simple Right",
             function(){
+                var z = zipper.right(zipper.down(binary.zipper(binary1)));
                 assert.deepEqual(
-                    binary.walk(tree.getNode(zipper.right(zipper.down(binary.zipper(binary1))))),
+                    binary.walk(tree.node(z)),
                     [6, 7, 8]);
                 assert.deepEqual(
-                    binary.walk(tree.getNode(zipper.right(zipper.down(zipper.down(binary.zipper(binary1)))))),
+                    stream.toArray(tree.edgePath(z)),
+                    ['right', null]);
+                
+                var z2 = zipper.right(zipper.down(zipper.down(binary.zipper(binary1))));
+                assert.deepEqual(
+                    binary.walk(tree.node(z2)),
                     [4, 5]);
+                assert.deepEqual(
+                    stream.toArray(tree.edgePath(z2)),
+                    ['right', 'left', null]);
             }],
             ["Empty",
             function(){

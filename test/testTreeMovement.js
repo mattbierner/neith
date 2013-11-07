@@ -47,7 +47,7 @@ function(zipper,
             ["Move to child",
             function(){
                 assert.deepEqual(
-                    tree.getNode(
+                    tree.node(
                         tree.child('7', tree.child('6', nary.zipper(nary1)))).value,
                     7);
             }],
@@ -61,11 +61,11 @@ function(zipper,
             ["Sibling",
             function(){
                 assert.deepEqual(
-                    tree.getNode(
+                    tree.node(
                         tree.sibling('2', tree.child('6', nary.zipper(nary1)))).value,
                     2);
                 assert.deepEqual(
-                    tree.getNode(
+                    tree.node(
                         tree.sibling('8', tree.child('6', nary.zipper(nary1)))).value,
                     8);
             }],

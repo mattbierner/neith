@@ -21,7 +21,7 @@ function(zipper,
             ["Prev Parent",
             function(){
                 assert.deepEqual(
-                    tree.getNode(zipper.prevDfs(zipper.down(binary.zipper($(1, $(2, null, null), null))))).value,
+                    tree.node(zipper.prevDfs(zipper.down(binary.zipper($(1, $(2, null, null), null))))).value,
                     1);
             }],
             ["Prev Right Sibling",
@@ -32,7 +32,7 @@ function(zipper,
                         $(4, null, null)),
                     $(5, null, null));
                 assert.deepEqual(
-                    tree.getNode(
+                    tree.node(
                         zipper.prevDfs(
                             zipper.right(
                                 zipper.down(

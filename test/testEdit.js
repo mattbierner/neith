@@ -48,7 +48,7 @@ function(zipper,
               ["Edit",
             function(){
                 assert.deepEqual(
-                    binary.walk(tree.getNode(zipper.root(
+                    binary.walk(tree.node(zipper.root(
                         tree.setNode(
                             $(10, null, $(11, null, null)),
                             zipper.down(binary.zipper(binary1)))))),
@@ -59,7 +59,7 @@ function(zipper,
             function(){
                 assert.deepEqual(
                     binary.walk(
-                        tree.getNode(zipper.root(
+                        tree.node(zipper.root(
                             tree.setNode(
                                 $(10, null, null),
                                 zipper.left(zipper.right(zipper.down(binary.zipper(binary1)))))))),
@@ -70,7 +70,7 @@ function(zipper,
             function(){
                 assert.deepEqual(
                     binary.walk(
-                        tree.getNode(zipper.root(
+                        tree.node(zipper.root(
                             tree.setNode(
                                 $(10, null, null),
                                 zipper.right(zipper.down(binary.zipper(binary1))))))),
@@ -83,23 +83,23 @@ function(zipper,
             function(){
                 assert.deepEqual(
                     binary.walk(
-                        tree.getNode(
+                        tree.node(
                             zipper.root(
-                                zipper.removeNode(zipper.down(binary.zipper(binary1)))))),
+                                zipper.remove(zipper.down(binary.zipper(binary1)))))),
                     [1, 6, 7, 8]);
                 assert.deepEqual(
                     binary.walk(
-                        tree.getNode(
+                        tree.node(
                             zipper.root(
-                                zipper.removeNode(zipper.right(zipper.down(zipper.down(binary.zipper(binary1)))))))),
+                                zipper.remove(zipper.right(zipper.down(zipper.down(binary.zipper(binary1)))))))),
                     [1, 2, 3, 6, 7, 8]);
             }],
             ["Remove returns DFS",
             function(){
                 assert.deepEqual(
                     binary.walk(
-                        tree.getNode(
-                            zipper.removeNode(zipper.right(zipper.down(binary.zipper(binary1)))))),
+                        tree.node(
+                            zipper.remove(zipper.right(zipper.down(binary.zipper(binary1)))))),
                     [2, 3, 4, 5]);
             }],
             
@@ -107,7 +107,7 @@ function(zipper,
             function(){
                 assert.deepEqual(
                     binary.walk(
-                        tree.getNode(
+                        tree.node(
                             zipper.root(
                                 tree.setNode(
                                     $(10,
@@ -120,7 +120,7 @@ function(zipper,
             function(){
                 assert.deepEqual(
                     binary.walk(
-                        tree.getNode(
+                        tree.node(
                             zipper.root(
                                 tree.setNode(
                                     null,
@@ -131,7 +131,7 @@ function(zipper,
             function(){
                 assert.deepEqual(
                     binary.walk(
-                        tree.getNode(
+                        tree.node(
                             zipper.root(
                                 tree.modifyNode(
                                     function(x) {
@@ -145,7 +145,7 @@ function(zipper,
             function(){
                 assert.deepEqual(
                     nary.walk(
-                        tree.getNode(
+                        tree.node(
                             zipper.root(
                                 tree.setNode(
                                     $n(100, {}),
@@ -156,7 +156,7 @@ function(zipper,
             function(){
                 assert.deepEqual(
                     nary.walk(
-                        tree.getNode(
+                        tree.node(
                             zipper.root(
                                 tree.insertLeft(
                                     100,
@@ -170,7 +170,7 @@ function(zipper,
             function(){
                 assert.deepEqual(
                     nary.walk(
-                        tree.getNode(
+                        tree.node(
                                 tree.insertLeft(
                                     100,
                                     $n(100, {
@@ -183,7 +183,7 @@ function(zipper,
             function(){
                 assert.deepEqual(
                     nary.walk(
-                        tree.getNode(
+                        tree.node(
                             zipper.root(
                                 tree.insertLeft(
                                     100,
@@ -198,7 +198,7 @@ function(zipper,
             function(){
                 assert.deepEqual(
                     nary.walk(
-                        tree.getNode(
+                        tree.node(
                             zipper.root(
                                 tree.insertRight(
                                     100,
@@ -214,7 +214,7 @@ function(zipper,
             function(){
                 assert.deepEqual(
                     nary.walk(
-                        tree.getNode(
+                        tree.node(
                             zipper.root(
                                 tree.appendChild(
                                     100,
@@ -226,7 +226,7 @@ function(zipper,
                 
                 assert.deepEqual(
                     nary.walk(
-                        tree.getNode(
+                        tree.node(
                             zipper.root(
                                 tree.appendChild(
                                     100,
