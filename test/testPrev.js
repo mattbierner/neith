@@ -1,7 +1,9 @@
 define(['neith/zipper',
+        'neith/tree',
         'binary',
         'nary'],
 function(zipper,
+        tree,
         binary,
         nary){
     
@@ -19,22 +21,22 @@ function(zipper,
             ["Prev Parent",
             function(){
                 assert.deepEqual(
-                    zipper.getNode(zipper.prevDfs(zipper.down(binary.zipper($(1, $(2, null, null), null))))).value,
+                    tree.getNode(zipper.prevDfs(zipper.down(binary.zipper($(1, $(2, null, null), null))))).value,
                     1);
             }],
             ["Prev Right Sibling",
             function(){
-                var tree = $(1,
+                var t = $(1,
                     $(2,
                         $(3, null, null),
                         $(4, null, null)),
                     $(5, null, null));
                 assert.deepEqual(
-                    zipper.getNode(
+                    tree.getNode(
                         zipper.prevDfs(
                             zipper.right(
                                 zipper.down(
-                                    binary.zipper(tree)))))
+                                    binary.zipper(t)))))
                         .value,
                     4);
             }],

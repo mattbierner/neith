@@ -1,8 +1,9 @@
 /**
  * @fileOverview Basic binary tree for testing purposes.
  */
-define(['neith/zipper'],
-function(zipper){
+define(['neith/zipper',
+        'neith/tree'],
+function(zipper,tree ){
 
 /* Binary
  ******************************************************************************/
@@ -18,7 +19,7 @@ Binary.prototype.print = function() {
         (this.right ? this.right.print() : '{}') + '}';
 };
 
-Binary.construct = function(x, _, children) {
+Binary.construct = function(x, _, _, children) {
     return new Binary(x.value,
         children.left,
         children.right)
@@ -33,7 +34,7 @@ var walk = function(root, path) {
 };
 
 var binaryZipper = function(root) {
-    return zipper.treeZipper(
+    return tree.treeZipper(
         function(x) {
             if (x.left && x.right)
                 return ['left', 'right'];
@@ -43,6 +44,7 @@ var binaryZipper = function(root) {
                 return ['right'];
             return [];
         },
+        function(r, c) { return r[c]; },
         Binary.construct,
         root);
 };

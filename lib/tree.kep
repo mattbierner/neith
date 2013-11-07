@@ -1,0 +1,186 @@
+/**
+ */
+package (
+    getNode,
+    getChild,
+    setNode,
+    modifyNode,
+    
+// Labeled Movement
+    child,
+    nthChild,
+    sibling,
+    
+// Labeled Editing
+    insertLeft,
+    insertRight,
+    insertChild,
+    appendChild,
+
+// Zipper Creation
+    treeZipper)
+with
+    import 'neith/zipper' zipper{right, left, up, down, getChildren},
+    import 'nu/stream' stream{foldl, cons, map, toArray}
+in {
+
+
+var indexOf = \e, s ->
+    foldl(
+        \p, c, i ->
+            (p >= 0 ? p : (c === e ? i : p)),
+        -1,
+        s);
+
+/* Records
+ ******************************************************************************/
+var Pair = \key, value -> ({'key': key, 'value': value});
+
+var key = \x -> x.key;
+
+var value = \x -> x.value;
+
+/* 
+ ******************************************************************************/
+getNode = zipper.getNode \> value;
+
+getChild = \edge, ctx -> ctx.getChild(ctx.focus, edge);
+
+setNode = \node, ctx -> zipper.setNode(
+    Pair(key(zipper.getNode(ctx)), node),
+    ctx);
+
+/**
+ * Modify focus with function `f` and replace it with result.
+ */
+modifyNode = \f, ctx ->
+    setNode(
+        f(getNode(ctx)),
+        ctx);
+
+
+/* Labeled Movement
+ ******************************************************************************/
+/**
+ * Move to the nth child of focus.
+ * 
+ * Returns null if no such child exists.
+ * 
+ * This is an order dependant operation.
+ * 
+ * @param index Index of child to move to.
+ */
+nthChild = let
+    goRight = \ctx, count ->
+        (count <= 0 ?
+            ctx :
+            goRight(right(ctx), count - 1))
+in
+    \index, ctx ->
+        let child = down(ctx) in
+            (child ?
+                goRight(child, index) :
+                child);
+
+/**
+ * Move to the child from `edge` of focus.
+ * 
+ * Returns null if no such child exists.
+ * 
+ * This is an order independent operation.
+ * 
+ * @param edge Label of edge to move on.
+ */
+child = \edge, ctx -> let
+    children = getChildren(ctx),
+    index = indexOf(edge, map(key, children))
+in
+    (index === -1 ? null :
+        nthChild(index, ctx));
+
+/**
+ * Move to the sibling with `edge` leading from the focus's parent.
+ * 
+ * Returns null if no such sibling exists. Returns the focus if `edge`
+ * leads to it.
+ * 
+ * This is an order independent operation.
+ * 
+ * @param edge Label of edge to move on.
+ */
+sibling = \edge, ctx ->
+    (ctx
+        |> up
+        |> (child, edge));
+
+/* Editing
+ ******************************************************************************/
+/**
+ * Insert a sibling to the left of the focus. Stays in the current location.
+ */
+insertLeft = \edge, node, ctx ->
+    zipper.insertLeft(
+        Pair(edge, node),
+        ctx);
+
+/**
+ * Insert a sibling to the right of the focus. Stays in the current location.
+ */
+insertRight = \edge, node, ctx ->
+    zipper.insertRight(
+        Pair(edge, node),
+        ctx);
+
+/**
+ * Insert a child at the left for the focus. Stays in the current location.
+ */
+insertChild = \edge, node, ctx ->
+    (ctx
+        |> down
+        |> (insertLeft, edge, node)
+        |> up);
+
+/**
+ * Insert a child at the right for the focus. Stays in current location.
+ */
+appendChild = \edge, node, ctx ->
+    zipper.appendChild(
+        Pair(edge, node),
+        ctx);
+
+/* Zipper
+ ******************************************************************************/
+/**
+ * Create a generic zipper.
+ * 
+ * @param edges Function taking a node and returning an array of edges
+ *     the children of this node.
+ * @param getChild Function taking a node and key and returning the child.
+ * @param constructNode Function taking a node, ordered list of edges, and map of
+ *    edges to children and returns a new node from these children.
+ * @param focus Starting point and current context for the zipper.
+ */
+treeZipper = \edges, getChild, constructNode, focus -> let
+    children = \{'key': k, 'value': v} ->
+        map(
+            \x -> Pair(x, getChild(v, x)),
+            stream.from(edges(v))),
+        
+    _constructNode = \parent, children -> let
+        reducer = \p, c -> {
+            p[key(c)] = value(c);
+            return p;
+        } in
+            Pair(parent.key, constructNode(
+                value(parent),
+                children,
+                toArray(map(key, children)),
+                foldl(reducer, {}, children)))
+    in
+        zipper.zipper(
+            children,
+            getChild,
+            _constructNode,
+            Pair(null, focus));
+
+}

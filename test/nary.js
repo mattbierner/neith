@@ -1,8 +1,10 @@
 /**
  * @fileOverview Basic binary tree for testing purposes.
  */
-define(['neith/zipper'],
-function(zipper){
+define(['neith/zipper',
+        'neith/tree'],
+function(zipper,
+        tree){
 
 /* Binary
  ******************************************************************************/
@@ -18,7 +20,7 @@ Nary.prototype.print = function() {
         this.children.map(function(x) { return self[x]; }.join(' ') + '}');
 };
 
-Nary.construct = function(x, children, values) {
+Nary.construct = function(x, _, children, values) {
     return new Nary(x.value, children, values);
 };
 
@@ -33,7 +35,7 @@ var walk = function(root, path) {
 };
 
 var naryZipper = function(root) {
-    return zipper.zipper(
+    return tree.treeZipper(
         function(x) { return x.children; },
         function(x, k) { return x.childValues[k]; },
         Nary.construct,
