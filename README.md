@@ -32,7 +32,7 @@ Include any AMD style module loader and load neith:
         <script type="application/javascript">
             requirejs.config({
                 paths: {
-                    'neith': './neith/dist',
+                    'neith': 'neith/dist',
                 }
             });
             require(['neith/zipper'], function(zipper) {

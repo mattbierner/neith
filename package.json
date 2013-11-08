@@ -2,7 +2,7 @@
     "name": "neith",
     "version": "1.0.0",
     "description": "Javascript Zipper Library",
-    "main": "lib/neith.js",
+    "main": "dist/neith.js",
     "repository": {
         "type": "git",
         "url": "git://github.com/mattbierner/neith.js.git"
