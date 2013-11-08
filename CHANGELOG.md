@@ -10,9 +10,10 @@
   `tree.path` that returns a list of edges).
 * Better support for infinite data structures.
 ** Can be infinite in all directions (path, lefts, rights).
-** Can zip things like the list of all integers focused at zero.
+** Can zip things like the list of all integers.
 ** Custom zippers should not assume that they can reduce these streams.
 * Renamed many generic zipper operations to be clearer.
+* Added list zipper package for zipping generic streams and arrays.
 
 ## 0.0.0 - October 30, 2013
 * Initial release.

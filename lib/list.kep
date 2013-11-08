@@ -1,8 +1,7 @@
 /**
- * @fileOverview Zipper operations for lists.
+ * @fileOverview Zippers for lists.
  */
 package (
-// Zipper Creation
     listZipper,
     listZipperIn,
     arrayZipper)
@@ -21,16 +20,13 @@ in {
  * @param s Stream starting point for the zipper. Call `zipper.down` to enter
  *   into the stream and `zipper.up` to rebuild it.
  */
-listZipper = \s -> let
-    children = \s ->
-        (isStream(s) ? s : NIL),
-    
+listZipper = let
+    children = \s -> (isStream(s) ? s : NIL),
     construct = \_, children -> children
 in
-    zipper(
+    (zipper,
         children,
-        construct,
-        s);
+        construct);
 
 /**
  * Create a list zipper with given surroundings.
@@ -57,14 +53,12 @@ listZipperIn = \lefts, focus, rights ->
  * 
  * @param arr Array starting point.
  */
-arrayZipper = \arr -> let
-    children = \s ->
-        (Array.isArray(s) ? from(s) : NIL),
-    
+arrayZipper = let
+    children = \s -> (Array.isArray(s) ? from(s) : NIL),
     construct = \_, children -> toArray(children)
 in
-    zipper(
+    (zipper,
         children,
-        construct,
-        arr);
+        construct);
+
 }
