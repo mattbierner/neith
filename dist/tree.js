@@ -11,13 +11,17 @@ define(["require", "exports", "neith/zipper", "nu/stream", "nu/select"], (functi
         up = zipper["up"],
         down = zipper["down"],
         stream = stream,
+        cons = stream["cons"],
         first = stream["first"],
         foldl = stream["foldl"],
-        cons = stream["cons"],
+        isStream = stream["isStream"],
         map = stream["map"],
         toArray = stream["toArray"],
         __o = __o,
         skip = __o["skip"];
+    var toStream = (function(s) {
+        return (isStream(s) ? s : stream.from(s));
+    });
     var indexOf = (function(e, s) {
         return foldl((function(p, c, i) {
             return ((p >= 0) ? p : ((c === e) ? i : p));
@@ -55,7 +59,7 @@ define(["require", "exports", "neith/zipper", "nu/stream", "nu/select"], (functi
             {
                 var children = zipper.children(ctx),
                     index = indexOf(edge, map(key, children));
-                return ((index === -1) ? null : first(skip(index, children)));
+                return value(first(skip.bind(null, index)(((index === -1) ? null : children))));
             }
         })();
     }));
@@ -114,31 +118,31 @@ define(["require", "exports", "neith/zipper", "nu/stream", "nu/select"], (functi
     (appendChild = (function(edge, node, ctx) {
         return zipper.appendChild(Pair(edge, node), ctx);
     }));
-    (treeZipper = (function(edges, getChild, constructNode, focus) {
-        return (function() {
-            {
-                var children = (function(__o0) {
-                    var __o0 = __o0,
-                        v = __o0["value"];
-                    return map((function(x) {
-                        return Pair(x, getChild(v, x));
-                    }), stream.from(edges(v)));
-                }),
-                    _constructNode = (function() {
-                        {
-                            var reducer = (function(p, c) {
-                                (p[key(c)] = value(c));
-                                return p;
-                            });
-                            return (function(parent, children) {
+    (treeZipper = (function() {
+        {
+            var reducer = (function(p, c) {
+                (p[key(c)] = value(c));
+                return p;
+            });
+            return (function(edges, getChild, constructNode, focus) {
+                return (function() {
+                    {
+                        var children = (function(__o0) {
+                            var __o0 = __o0,
+                                v = __o0["value"];
+                            return map((function(x) {
+                                return Pair(x, getChild(v, x));
+                            }), toStream(edges(v)));
+                        }),
+                            _constructNode = (function(parent, children) {
                                 return Pair(parent.key, constructNode(value(parent), children, toArray(map(key, children)), foldl(reducer, ({}), children)));
                             });
-                        }
-                    })();
-                return zipper.zipper(children, _constructNode, Pair(null, focus));
-            }
-        })();
-    }));
+                        return zipper.zipper(children, _constructNode, Pair(null, focus));
+                    }
+                })();
+            });
+        }
+    })());
     (exports.edgePath = edgePath);
     (exports.nodePath = nodePath);
     (exports.node = node);

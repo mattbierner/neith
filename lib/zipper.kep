@@ -407,7 +407,8 @@ remove = \ctx ->
  *   the one next to the focus.
  * @param ctx
  */
-setLefts = \ls, ctx -> modifyLoc(ctx, \loc -> Loc.setLeft(loc, ls));
+setLefts = \ls, ctx ->
+    modifyLoc(ctx, \loc -> Loc.setLeft(loc, ls));
 
 /**
  * Modify the current lefts of the focus.
@@ -415,7 +416,8 @@ setLefts = \ls, ctx -> modifyLoc(ctx, \loc -> Loc.setLeft(loc, ls));
  * @param  f Mapping current lefts to new lefts.
  * @param ctx
  */
-modifyLefts = \f, ctx -> setLefts(f(lefts(ctx)), ctx);
+modifyLefts = \f, ctx ->
+    setLefts(f(lefts(ctx)), ctx);
 
 /**
  * Set the rights of the focus.
@@ -423,7 +425,8 @@ modifyLefts = \f, ctx -> setLefts(f(lefts(ctx)), ctx);
  * @param ls Stream of rights
  * @param ctx
  */
-setRights = \rs, ctx -> modifyLoc(ctx, \loc -> Loc.setRight(loc, rs));
+setRights = \rs, ctx ->
+    modifyLoc(ctx, \loc -> Loc.setRight(loc, rs));
 
 /**
  * Modify the rights lefts of the focus.
@@ -431,7 +434,8 @@ setRights = \rs, ctx -> modifyLoc(ctx, \loc -> Loc.setRight(loc, rs));
  * @param f Mapping current lefts to new lefts.
  * @param ctx
  */
-modifyRights = \f, ctx -> setRights(f(rights(ctx)), ctx);
+modifyRights = \f, ctx ->
+    setRights(f(rights(ctx)), ctx);
 
 /**
  * Insert a sibling to the left of the focus. Stays in the current location.

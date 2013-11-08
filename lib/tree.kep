@@ -36,9 +36,12 @@ package (
     treeZipper)
 with
     import 'neith/zipper' zipper{right, left, up, down},
-    import 'nu/stream' stream{first, foldl, cons, map, toArray},
+    import 'nu/stream' stream{cons, first, foldl, isStream, map, toArray},
     import 'nu/select' {skip}
 in {
+
+var toStream = \s ->
+    (isStream(s) ? s : stream.from(s));
 
 var indexOf = \e, s ->
     foldl(
@@ -81,22 +84,25 @@ nodePath = zipper.path \> (map, value);
 node = zipper.extract \> value;
 
 /**
- * Get the value of the
+ * Get the value of a child.
  */
 childNode = \edge, ctx -> let
     children = zipper.children(ctx),
     index = indexOf(edge, map(key, children))
 in
     (index === -1 ? null :
-        first(skip(index, children)));
+        children
+            |> (skip, index)
+            |> first
+            |> value);
 
 /**
- * 
+ * Get the value of the parent of the focus.
  */
 parentNode = zipper.parent \> value;
 
 /**
- * 
+ * Get the values of all children of the focus.
  */
 childNodes = zipper.children \> (map, value);
 
@@ -106,9 +112,7 @@ childNodes = zipper.children \> (map, value);
  * Move to the nth child of focus.
  * 
  * Returns null if no such child exists.
- * 
- * This is an order dependant operation.
- * 
+ *
  * @param index Index of child to move to.
  */
 nthChild = let
@@ -128,8 +132,6 @@ in
  * 
  * Returns null if no such child exists.
  * 
- * This is an order independent operation.
- * 
  * @param edge Label of edge to move on.
  */
 child = \edge, ctx -> let
@@ -144,8 +146,6 @@ in
  * 
  * Returns null if no such sibling exists. Returns the focus if `edge`
  * leads to it.
- * 
- * This is an order independent operation.
  * 
  * @param edge Label of edge to move on.
  */
@@ -172,9 +172,12 @@ setNode = \node, ctx ->
         ctx);
 
 /**
- * Modify the current focus with function `f` and replace it with result.
+ * Modify the current focus
  * 
  * Keeps current edge
+ * 
+ * @param f Function mapping current focus to replacement.
+ * @param ctx
  */
 modifyNode = \f, ctx ->
     setNode(
@@ -228,26 +231,27 @@ appendChild = \edge, node, ctx ->
 /**
  * Create a generic zipper.
  * 
- * @param edges Function taking a node and returning an array of edges
- *     the children of this node.
- * @param getChild Function taking a node and key and returning the child.
- * @param constructNode Function taking a node, ordered list of edges, and map of
- *    edges to children and returns a new node from these children.
+ * @param edges Function taking a node and returning a stream or array of edges
+ *     for the children of this node.
+ * @param getChild Function taking a node and edge and returning the child.
+ * @param constructNode Function taking a node, list of edge values pairs,
+ *  ordered list of edges, and map of edges to children and returns a new
+ *  node from these children.
  * @param focus Starting point and current context for the zipper.
  */
-treeZipper = \edges, getChild, constructNode, focus -> let
-    children = \{'value': v} ->
-        map(
-            \x -> Pair(x, getChild(v, x)),
-            stream.from(edges(v))),
-        
-    _constructNode = let
-        reducer = \p, c -> {
-            p[key(c)] = value(c);
-            return p;
-        }
-    in
-         \parent, children ->
+treeZipper = let
+    reducer = \p, c -> {
+        p[key(c)] = value(c);
+        return p;
+    }
+in
+    \edges, getChild, constructNode, focus -> let
+        children = \{'value': v} ->
+            map(
+                \x -> Pair(x, getChild(v, x)),
+                toStream(edges(v))),
+            
+        _constructNode = \parent, children ->
             Pair(
                 parent.key,
                 constructNode(
@@ -255,10 +259,10 @@ treeZipper = \edges, getChild, constructNode, focus -> let
                     children,
                     toArray(map(key, children)),
                     foldl(reducer, {}, children)))
-in
-    zipper.zipper(
-        children,
-        _constructNode,
-        Pair(null, focus));
+    in
+        zipper.zipper(
+            children,
+            _constructNode,
+            Pair(null, focus));
 
 }

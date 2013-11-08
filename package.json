@@ -13,6 +13,9 @@
         "data structure",
         "tree"
     ],
+    "dependencies": {
+     "nu": ">=2.0.0"
+    },
     "author": "Matt Bierner",
     "license": "MIT"
 }
