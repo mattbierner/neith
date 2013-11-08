@@ -156,7 +156,7 @@ sibling = \edge, ctx ->
 
 /* Basic Editing
  * 
- * Use `neith/zipper` operations to modify edge value pair of nodes.
+ * Use `neith/zipper` operations to modify edge, value pair of nodes.
  ******************************************************************************/
 /**
  * Set the current focus.
@@ -241,20 +241,24 @@ treeZipper = \edges, getChild, constructNode, focus -> let
             \x -> Pair(x, getChild(v, x)),
             stream.from(edges(v))),
         
-    _constructNode = \parent, children -> let
+    _constructNode = let
         reducer = \p, c -> {
             p[key(c)] = value(c);
             return p;
-        } in
-            Pair(parent.key, constructNode(
-                value(parent),
-                children,
-                toArray(map(key, children)),
-                foldl(reducer, {}, children)))
+        }
     in
-        zipper.zipper(
-            children,
-            _constructNode,
-            Pair(null, focus));
+         \parent, children ->
+            Pair(
+                parent.key,
+                constructNode(
+                    value(parent),
+                    children,
+                    toArray(map(key, children)),
+                    foldl(reducer, {}, children)))
+in
+    zipper.zipper(
+        children,
+        _constructNode,
+        Pair(null, focus));
 
 }

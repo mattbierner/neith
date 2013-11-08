@@ -1,0 +1,52 @@
+/**
+ * @fileOverview Zipper operations for lists.
+ */
+package (
+// Zipper Creation
+    listZipper,
+    listZipperIn)
+with
+    import 'neith/zipper' {zipper, setLefts, setRights},
+    import 'nu/stream' stream{first, foldl, cons, map, toArray, isStream, isEmpty, 'end': NIL}
+in {
+
+/* Zipper
+ ******************************************************************************/
+/**
+ * Create zipper for list
+ * 
+ * Allows traversing down into streams contained in the stream.
+ * 
+ * @param s Stream starting point for the zipper. Call `zipper.down` to enter
+ *   into the stream and `zipper.up` to rebuild it.
+ */
+listZipper = \s -> let
+    children = \s ->
+        (stream.isStream(s) ? s : NIL),
+        
+    construct = \_, children -> children
+in
+    zipper(
+        children,
+        construct,
+        s);
+
+/**
+ * Create a list zipper with given surroundings.
+ * 
+ * Because `zipper.down` always attempts to move to its leftmost child,
+ * it cannot be used for bidirectionally infinite streams. This allows starting
+ * in such streams directly. `zipper.up` will rebuild the infinite stream but
+ * if the stream remains infinite on the left, it cannot be entered again with
+ * `zipper.down`.
+ * 
+ * @param lefts Stream of left siblings in reverse order.
+ * @param focus Focus of the zipper.
+ * @param rights Stream of right siblings.
+ */
+listZipperIn = \lefts, focus, rights ->
+    (listZipper(focus)
+        |> (setLefts, lefts)
+        |> (setRights, rights));
+
+}

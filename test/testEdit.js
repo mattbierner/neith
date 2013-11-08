@@ -223,7 +223,9 @@ function(zipper,
                                     }),
                                     zipper.right(zipper.down(nary.zipper(nary1))))))),
                     [1, 2, 3, 4, 5, 6, 7, 100, 101, 8]);
-                
+            }],
+            ["Append Child to leaf",
+            function(){
                 assert.deepEqual(
                     nary.walk(
                         tree.node(
