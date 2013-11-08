@@ -209,6 +209,43 @@ function(zipper,
                     [1, 2, 3, 4, 5, 6, 7, 100, 101, 8]);
             }],
             
+            ["Insert Child Nary",
+            function(){
+                var z = zipper.down(nary.zipper(nary1));
+                
+                assert.deepEqual(
+                    nary.walk(
+                        tree.node(
+                            zipper.root(
+                                tree.insertChild(
+                                    100,
+                                    $n(100, {
+                                        101: $n(101, {})
+                                    }),
+                                    z)))),
+                    [1, 2, 100, 101, 3, 4, 5, 6, 7, 8]);
+
+            }],
+            ["Insert Child Nary on leaf",
+            function(){
+                var z = zipper.down(zipper.down(nary.zipper(nary1)));
+                assert.equal(
+                    zipper.isLeaf(z), 
+                    true)
+                    
+                assert.deepEqual(
+                    nary.walk(
+                        tree.node(
+                            zipper.root(
+                                tree.insertChild(
+                                    100,
+                                    $n(100, {
+                                        101: $n(101, {})
+                                    }),
+                                    z)))),
+                    [1, 2, 3, 100, 101, 4, 5, 6, 7, 8]);
+
+            }],
             
             ["Append Child",
             function(){

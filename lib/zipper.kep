@@ -449,10 +449,14 @@ insertRight = \node, ctx ->
  * Insert a left child for the focus. Stays in the current location.
  */
 insertChild = \node, ctx ->
-    (ctx
-        |> down
-        |> (insertLeft, node)
-        |> up);
+    (hasChildren(ctx) ?
+        (ctx
+            |> down
+            |> (insertLeft, node)
+            |> up) :
+        replace(
+            construct(ctx, extract(ctx), cons(node, NIL)),
+            ctx));
 
 /**
  * Insert a child at the right for the focus. Stays in current location.
@@ -464,9 +468,7 @@ appendChild = \node, ctx ->
             |> rightmost
             |> (insertRight, node)
             |> up) :
-        replace(
-            construct(ctx, extract(ctx), cons(node, NIL)),
-            ctx));
+        insertChild(node, ctx));
 
 /* Zipper
  ******************************************************************************/
