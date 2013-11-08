@@ -124,7 +124,24 @@ function(zipper,
                 assert.deepEqual(
                      zipper.extract(zipper.left(z)),
                     -1);
+            }],
+            
+            ["Array",
+            function(){
+                var z = list.arrayZipper([0, 1, 2, 3]);
+                assert.deepEqual(
+                     zipper.extract(
+                        zipper.down(z)),
+                    0);
+                assert.deepEqual(
+                     zipper.extract(
+                        zipper.right(zipper.down(z))),
+                    1);
                 
+                 assert.deepEqual(
+                     zipper.extract(
+                        zipper.up(zipper.down(z))),
+                    [0, 1, 2, 3]);
             }],
         ],
     };

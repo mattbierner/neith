@@ -4,16 +4,17 @@
 package (
 // Zipper Creation
     listZipper,
-    listZipperIn)
+    listZipperIn,
+    arrayZipper)
 with
     import 'neith/zipper' {zipper, setLefts, setRights},
-    import 'nu/stream' stream{first, foldl, cons, map, toArray, isStream, isEmpty, 'end': NIL}
+    import 'nu/stream' {isStream, from, toArray, 'end': NIL}
 in {
 
 /* Zipper
  ******************************************************************************/
 /**
- * Create zipper for list
+ * Create zipper for a list
  * 
  * Allows traversing down into streams contained in the stream.
  * 
@@ -22,8 +23,8 @@ in {
  */
 listZipper = \s -> let
     children = \s ->
-        (stream.isStream(s) ? s : NIL),
-        
+        (isStream(s) ? s : NIL),
+    
     construct = \_, children -> children
 in
     zipper(
@@ -49,4 +50,21 @@ listZipperIn = \lefts, focus, rights ->
         |> (setLefts, lefts)
         |> (setRights, rights));
 
+/**
+ * Create a zipper for an array.
+ * 
+ * Same behavior as list but outputs arrays.
+ * 
+ * @param arr Array starting point.
+ */
+arrayZipper = \arr -> let
+    children = \s ->
+        (Array.isArray(s) ? from(s) : NIL),
+    
+    construct = \_, children -> toArray(children)
+in
+    zipper(
+        children,
+        construct,
+        arr);
 }
