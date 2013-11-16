@@ -1,6 +1,6 @@
 {
     "name": "neith",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Javascript Zipper Library",
     "main": "dist/neith.js",
     "repository": {
@@ -14,7 +14,7 @@
         "tree"
     ],
     "dependencies": {
-     "nu": ">=2.0.0"
+     "nu": ">=3.0.0"
     },
     "author": "Matt Bierner",
     "license": "MIT"

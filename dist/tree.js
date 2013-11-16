@@ -14,6 +14,7 @@ define(["require", "exports", "neith/zipper", "nu/stream", "nu/select"], (functi
         cons = stream["cons"],
         first = stream["first"],
         foldl = stream["foldl"],
+        indexed = stream["indexed"],
         isStream = stream["isStream"],
         map = stream["map"],
         toArray = stream["toArray"],
@@ -23,9 +24,11 @@ define(["require", "exports", "neith/zipper", "nu/stream", "nu/select"], (functi
         return (isStream(s) ? s : stream.from(s));
     });
     var indexOf = (function(e, s) {
-        return foldl((function(p, c, i) {
+        return foldl((function(p, __a) {
+            var i = __a[0],
+                c = __a[1];
             return ((p >= 0) ? p : ((c === e) ? i : p));
-        }), -1, s);
+        }), -1, indexed(s));
     });
     var Pair = (function(key, value) {
         return ({
@@ -120,8 +123,11 @@ define(["require", "exports", "neith/zipper", "nu/stream", "nu/select"], (functi
     }));
     (treeZipper = (function() {
         {
-            var reducer = (function(p, c) {
-                (p[key(c)] = value(c));
+            var reducer = (function(p, __o0) {
+                var __o0 = __o0,
+                    key = __o0["key"],
+                    value = __o0["value"];
+                (p[key] = value);
                 return p;
             });
             return (function(edges, getChild, constructNode, focus) {
@@ -129,10 +135,10 @@ define(["require", "exports", "neith/zipper", "nu/stream", "nu/select"], (functi
                     {
                         var children = (function(__o0) {
                             var __o0 = __o0,
-                                v = __o0["value"];
+                                value = __o0["value"];
                             return map((function(x) {
-                                return Pair(x, getChild(v, x));
-                            }), toStream(edges(v)));
+                                return Pair(x, getChild(value, x));
+                            }), toStream(edges(value)));
                         }),
                             _constructNode = (function(parent, children) {
                                 return Pair(parent.key, constructNode(value(parent), children, toArray(map(key, children)), foldl(reducer, ({}), children)));

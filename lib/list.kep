@@ -7,7 +7,7 @@ package (
     arrayZipper)
 with
     import 'neith/zipper' {zipper, setLefts, setRights},
-    import 'nu/stream' {isStream, from, toArray, 'end': NIL}
+    import 'nu/stream' {isStream, from, toArray, NIL}
 in {
 
 /* Zipper
@@ -33,9 +33,7 @@ in
  * 
  * Because `zipper.down` always attempts to move to its leftmost child,
  * it cannot be used for bidirectionally infinite streams. This allows starting
- * in such streams directly. `zipper.up` will rebuild the infinite stream but
- * if the stream remains infinite on the left, it cannot be entered again with
- * `zipper.down`.
+ * in such streams directly.
  * 
  * @param lefts Stream of left siblings in reverse order.
  * @param focus Focus of the zipper.

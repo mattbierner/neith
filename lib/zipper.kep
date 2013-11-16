@@ -55,15 +55,11 @@ package (
     zipper,
     treeZipper)
 with
-    import 'nu/stream' {append, cons, first, rest, isEmpty, 'end': NIL, foldl},
+    import 'nu/stream' {append, cons, first, rest, isEmpty, NIL, foldl, reverse},
     import 'nu/select' {skip}
 in {
 
 var flip = \f -> \x, y -> f(y, x);
-
-var reverse = (foldl,
-    flip(cons),
-    NIL);
 
 // Context
 ////////////////////////////////////////

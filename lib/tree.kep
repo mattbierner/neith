@@ -36,7 +36,7 @@ package (
     treeZipper)
 with
     import 'neith/zipper' zipper{right, left, up, down},
-    import 'nu/stream' stream{cons, first, foldl, isStream, map, toArray},
+    import 'nu/stream' stream{cons, first, foldl, indexed, isStream, map, toArray},
     import 'nu/select' {skip}
 in {
 
@@ -45,10 +45,10 @@ var toStream = \s ->
 
 var indexOf = \e, s ->
     foldl(
-        \p, c, i ->
+        \p, [i, c] ->
             (p >= 0 ? p : (c === e ? i : p)),
         -1,
-        s);
+        indexed <| s);
 
 /* Records
  ******************************************************************************/
@@ -240,16 +240,16 @@ appendChild = \edge, node, ctx ->
  * @param focus Starting point and current context for the zipper.
  */
 treeZipper = let
-    reducer = \p, c -> {
-        p[key(c)] = value(c);
+    reducer = \p, {key, value} -> {
+        p[key] = value;
         return p;
     }
 in
     \edges, getChild, constructNode, focus -> let
-        children = \{'value': v} ->
+        children = \{value} ->
             map(
-                \x -> Pair(x, getChild(v, x)),
-                toStream(edges(v))),
+                \x -> Pair(x, getChild(value, x)),
+                toStream(edges(value))),
             
         _constructNode = \parent, children ->
             Pair(

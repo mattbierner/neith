@@ -11,8 +11,9 @@ define(["require", "exports", "nu/stream", "nu/select"], (function(require, expo
         first = __o["first"],
         rest = __o["rest"],
         isEmpty = __o["isEmpty"],
-        NIL = __o["end"],
+        NIL = __o["NIL"],
         foldl = __o["foldl"],
+        reverse = __o["reverse"],
         __o0 = __o0,
         skip = __o0["skip"];
     var flip = (function(f) {
@@ -20,7 +21,6 @@ define(["require", "exports", "nu/stream", "nu/select"], (function(require, expo
             return f(y, x);
         });
     });
-    var reverse = foldl.bind(null, flip(cons), NIL);
     var Context = (function(loc, children, constructNode) {
         (this.loc = loc);
         (this.children = children);

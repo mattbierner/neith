@@ -13,7 +13,7 @@ define(["require", "exports", "neith/zipper", "nu/stream"], (function(require, e
         isStream = __o0["isStream"],
         from = __o0["from"],
         toArray = __o0["toArray"],
-        NIL = __o0["end"];
+        NIL = __o0["NIL"];
     (listZipper = (function() {
         {
             var children = (function(s) {

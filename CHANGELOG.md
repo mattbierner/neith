@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 1.1.0 - November 16, 2013
+* Updated to Nu V3.0.
+
 ## 1.0.0 - November 7, 2013
 * Split labled tree functionality into own module.
 ** Core, generic zipper logic made more general.
