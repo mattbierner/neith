@@ -18,7 +18,7 @@ supports zippers for variations of n-ary ordered trees with labeled edges.
 # Using Neith
 
 ## Dependencies
-* [Nu][nu] 2.0.X - Small functional, lazy stream library.
+* [Nu][nu] 3.0.X - Small functional, lazy stream library.
 
 
 ## With AMD ##
