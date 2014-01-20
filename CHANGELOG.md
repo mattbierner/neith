@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 1.2.0 - November 16, 2014
+* Added node package
+
 ## 1.1.0 - November 16, 2013
 * Updated to Nu V3.0.
 
