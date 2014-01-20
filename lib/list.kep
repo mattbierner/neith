@@ -2,12 +2,19 @@
  * @fileOverview Zippers for lists.
  */
 package (
-    listZipper,
-    listZipperIn,
+    listZipper
+    listZipperIn
     arrayZipper)
 with
-    import 'neith/zipper' {zipper, setLefts, setRights},
-    import 'nu/stream' {isStream, from, toArray, NIL}
+    import 'nu-stream::stream' {
+        isStream
+        from
+        toArray
+        NIL},
+    import './zipper' {
+        zipper
+        setLefts
+        setRights}
 in {
 
 /* Zipper
@@ -22,7 +29,7 @@ in {
  */
 listZipper = let
     children = \s -> (isStream(s) ? s : NIL),
-    construct = \_, children -> children
+    construct = \_ children -> children
 in
     (zipper,
         children,
@@ -53,7 +60,7 @@ listZipperIn = \lefts, focus, rights ->
  */
 arrayZipper = let
     children = \s -> (Array.isArray(s) ? from(s) : NIL),
-    construct = \_, children -> toArray(children)
+    construct = \_ children -> toArray(children)
 in
     (zipper,
         children,

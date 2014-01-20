@@ -43,7 +43,7 @@ Include any AMD style module loader and load neith:
 
 
 ## Code
-parse.js is written in Javascript / Khepri. [Khepri][khepri] is a ECMAScript subset
+Neith is written in Javascript / Khepri. [Khepri][khepri] is a ECMAScript subset
 that, among other things, adds a shorted lambda function syntax. `dist` contains
 the generated Javascript files while `lib` contains the source Khepri files.
 

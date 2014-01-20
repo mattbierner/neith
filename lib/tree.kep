@@ -8,36 +8,51 @@
  */
 package (
 // Location Query
-    edgePath,
-    nodePath,
+    edgePath
+    nodePath
     
 // Focus Queries
-    node,
-    childNode,
-    parentNode,
-    childNodes,
+    node
+    edge
+    childNode
+    parentNode
+    childNodes
 
 // Labeled Movement
-    child,
-    nthChild,
-    sibling,
+    child
+    nthChild
+    sibling
     
 // Basic Editing
-    setNode,
-    modifyNode,
+    setNode
+    modifyNode
+    
+    setEdge
+    modifyEdge
     
 // Labeled Editing
-    insertLeft,
-    insertRight,
-    insertChild,
-    appendChild,
+    insertLeft
+    insertRight
+    insertChild
+    appendChild
 
 // Zipper Creation
     treeZipper)
 with
-    import 'neith/zipper' zipper{right, left, up, down},
-    import 'nu/stream' stream{cons, first, foldl, indexed, isStream, map, toArray},
-    import 'nu/select' {skip}
+    import './zipper' zipper#{
+        right
+        left
+        up
+        down},
+    import 'nu-stream::stream' stream#{
+        cons
+        first
+        foldl
+        indexed
+        isStream
+        map
+        toArray},
+    import 'nu-stream::select' {skip}
 in {
 
 var toStream = \s ->
@@ -45,21 +60,32 @@ var toStream = \s ->
 
 var indexOf = \e, s ->
     foldl(
-        \p, [i, c] ->
+        \p [i c] ->
             (p >= 0 ? p : (c === e ? i : p)),
         -1,
         indexed <| s);
 
-/* Records
+var Pair = \key value -> ({'key': key, 'value': value});
+
+var key = \{key} -> key;
+var value = \{value} -> value;
+
+/* Queries
  ******************************************************************************/
-var Pair = \key, value -> ({'key': key, 'value': value});
+/**
+ * Get the value of the focus.
+ * 
+ * @param ctx
+ */
+node = zipper.extract \> value;
 
-var key = \x -> x.key;
+/**
+ * Get the value of the edge leading to the focus.
+ * 
+ * @param ctx
+ */
+edge = zipper.extract \> key;
 
-var value = \x -> x.value;
-
-/* Location Query
- ******************************************************************************/
 /**
  * Get list edges leading to the focus.
  * 
@@ -74,28 +100,6 @@ edgePath = zipper.path \> (map, key);
  */
 nodePath = zipper.path \> (map, value);
 
-/* Focus Queries
- ******************************************************************************/
-/**
- * Get the value of the focus.
- * 
- * @param ctx
- */
-node = zipper.extract \> value;
-
-/**
- * Get the value of a child.
- */
-childNode = \edge, ctx -> let
-    children = zipper.children(ctx),
-    index = indexOf(edge, map(key, children))
-in
-    (index === -1 ? null :
-        children
-            |> (skip, index)
-            |> first
-            |> value);
-
 /**
  * Get the value of the parent of the focus.
  */
@@ -105,6 +109,13 @@ parentNode = zipper.parent \> value;
  * Get the values of all children of the focus.
  */
 childNodes = zipper.children \> (map, value);
+
+/**
+ * Get the value of a child.
+ */
+childNode = \edge ctx ->
+    let c = child(edge, ctx) in
+        (c ? node(c) : null);
 
 /* Labeled Movement
  ******************************************************************************/
@@ -125,7 +136,7 @@ in
         let child = down(ctx) in
             (child ?
                 goRight(child, index) :
-                child);
+                null);
 
 /**
  * Move to the child from `edge` of focus.
@@ -134,12 +145,13 @@ in
  * 
  * @param edge Label of edge to move on.
  */
-child = \edge, ctx -> let
-    children = zipper.children(ctx),
-    index = indexOf(edge, map(key, children))
-in
-    (index === -1 ? null :
-        nthChild(index, ctx));
+child = \edge, ctx ->
+    (!ctx ? null :
+        let
+            children = zipper.children(ctx),
+            index = indexOf(edge, map(key, children))
+        in
+            (index === -1 ? null : nthChild(index, ctx)));
 
 /**
  * Move to the sibling with `edge` leading from the focus's parent.
@@ -149,7 +161,7 @@ in
  * 
  * @param edge Label of edge to move on.
  */
-sibling = \edge, ctx ->
+sibling = \edge ctx ->
     (ctx
         |> up
         |> (child, edge));
@@ -182,6 +194,32 @@ setNode = \node, ctx ->
 modifyNode = \f, ctx ->
     setNode(
         f(node(ctx)),
+        ctx);
+
+/**
+ * Set the current focus.
+ * 
+ * Keeps current edge.
+ * 
+ * @param edge New edge leading to focus.
+ * @param ctx
+ */
+setEdge = \edge, ctx ->
+    zipper.replace(
+        Pair(key(zipper.extract(ctx)), node),
+        ctx);
+
+/**
+ * Modify the current focus
+ * 
+ * Keeps current edge
+ * 
+ * @param f Function mapping current focus to replacement.
+ * @param ctx
+ */
+modifyEdge = \f, ctx ->
+    setNode(
+        f(edge(ctx)),
         ctx);
     
 /* Labled Editing
@@ -229,7 +267,7 @@ appendChild = \edge, node, ctx ->
 /* Zipper
  ******************************************************************************/
 /**
- * Create a generic zipper.
+ * Create a generic tree zipper.
  * 
  * @param edges Function taking a node and returning a stream or array of edges
  *     for the children of this node.
@@ -240,12 +278,12 @@ appendChild = \edge, node, ctx ->
  * @param focus Starting point and current context for the zipper.
  */
 treeZipper = let
-    reducer = \p, {key, value} -> {
+    reducer = \p {key value} -> {
         p[key] = value;
         return p;
     }
 in
-    \edges, getChild, constructNode, focus -> let
+    \edges getChild constructNode focus -> let
         children = \{value} ->
             map(
                 \x -> Pair(x, getChild(value, x)),
@@ -253,7 +291,7 @@ in
             
         _constructNode = \parent, children ->
             Pair(
-                parent.key,
+                key(parent),
                 constructNode(
                     value(parent),
                     children,

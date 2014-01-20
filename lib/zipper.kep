@@ -3,63 +3,71 @@
  */
 package (
 // State
-    path,
-    lefts,
-    rights,
+    path
+    lefts
+    rights
 
 // Node Queries
-    children,
-    parent,
+    children
+    parent
 
 // Node Predicates
-    hasChildren,
-    hasParent,
-    isRoot,
-    isChild,
-    isLeaf,
-    isFirst,
-    isLast,
+    hasChildren
+    hasParent
+    isRoot
+    isChild
+    isLeaf
+    isFirst
+    isLast
 
 // Basic Movement
-    up,
-    down,
-    left,
-    right,
+    up
+    down
+    left
+    right
 
 // Compound Movement
-    root,
-    leftmost,
-    rightmost,
-    leftLeaf,
-    rightLeaf,
+    root
+    leftmost
+    rightmost
+    leftLeaf
+    rightLeaf
     
-    nextUpDfs,
-    nextDfs,
-    prevDfs,
+    nextUpDfs
+    nextDfs
+    prevDfs
     
 // Editing
-    extract,
-    replace,
-    modify,
-    remove,
-    setLefts,
-    modifyLefts,
-    setRights,
-    modifyRights,
-    insertLeft,
-    insertRight,
-    insertChild,
-    appendChild,
+    extract
+    replace
+    modify
+    remove
+    setLefts
+    modifyLefts
+    setRights
+    modifyRights
+    insertLeft
+    insertRight
+    insertChild
+    appendChild
 
 // Zipper Creation
-    zipper,
-    treeZipper)
+    zipper)
 with
-    import 'nu/stream' {append, cons, first, rest, isEmpty, NIL, foldl, reverse},
-    import 'nu/select' {skip}
+    import 'nu-stream::stream' {
+        append
+        cons
+        first
+        rest
+        isEmpty
+        NIL
+        foldl
+        reverse},
+    import 'nu-stream::select' {
+        skip}
 in {
 
-var flip = \f -> \x, y -> f(y, x);
+var flip = \f -> \x y -> f(y, x);
 
 // Context
 ////////////////////////////////////////
@@ -117,7 +125,7 @@ Loc.setSurround = \loc, left, focus, right ->
             Loc.setFocus(loc, focus),
             left),
         right);
-    
+
 /* Internal operations
  ******************************************************************************/
 var getLoc = \ctx -> ctx.loc;
@@ -134,7 +142,7 @@ var pushPath = \x, ctx -> cons(x, getPath(ctx));
 
 /* Reconstruction
  ******************************************************************************/
-var construct = \ctx, parent, children ->
+var construct = \ctx parent children ->
     ctx.constructNode(
         parent,
         children);

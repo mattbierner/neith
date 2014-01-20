@@ -1,9 +1,8 @@
 /**
  * @fileOverview Basic binary tree for testing purposes.
  */
-define(['neith/zipper',
-        'neith/tree'],
-function(zipper,tree ){
+var zipper = require('../index').zipper;
+var tree = require('../index').tree;
 
 /* Binary
  ******************************************************************************/
@@ -51,10 +50,6 @@ var binaryZipper = function(root) {
 
 /* Export
  ******************************************************************************/
-return {
-    'Binary': Binary,
-    'walk': walk,
-    'zipper': binaryZipper
-};
-
-});
+exports.Binary = Binary;
+exports.walk = walk;
+exports.zipper = binaryZipper;
