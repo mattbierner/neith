@@ -14,14 +14,26 @@ supports zippers for variations of n-ary ordered trees with labeled edges.
     cd neith
     git submodule update --init
 
-
 # Using Neith
 
 ## Dependencies
-* [Nu][nu] 3.0.X - Small functional, lazy stream library.
+* [Nu][nu] 3.1.x - Small functional, lazy stream library.
 
 
-## With AMD ##
+## With node
+Library code is in `dist_node` directory.
+
+
+    $ npm install neith
+
+    var zipper = require('neith').zipper;
+    var listZipper = require('neith').list;
+    
+    var z = listZipper.arrayZipper([1, 2, 3]);
+    zipper.extract(zipper.down(z)); // 1
+
+## With AMD
+Library code is in `dist` directory.
 Include any AMD style module loader and load neith:
 
     <!DOCTYPE html>
@@ -32,7 +44,8 @@ Include any AMD style module loader and load neith:
         <script type="application/javascript">
             requirejs.config({
                 paths: {
-                    'neith': 'neith/dist',
+                    'nu-stream': 'nu/dist',
+                    'neith': 'neith/dist'
                 }
             });
             require(['neith/zipper'], function(zipper) {
