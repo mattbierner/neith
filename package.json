@@ -21,8 +21,8 @@
     },
     "files": [
         "dist_node/",
-        "lib",
-        "test",
+        "lib/",
+        "tests/",
         "index.js",
         "test.js"
     ],
