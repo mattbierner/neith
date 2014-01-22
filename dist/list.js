@@ -1,4 +1,4 @@
-define(["require", "exports", "nu-stream::stream", "./zipper"], (function(require, exports, __o, __o0) {
+define(["require", "exports", "nu-stream/stream", "./zipper"], (function(require, exports, __o, __o0) {
     "use strict";
     var listZipper, listZipperIn, arrayZipper;
     var __o = __o,

@@ -1,4 +1,4 @@
-define(["require", "exports", "nu-stream::stream", "nu-stream::select"], (function(require, exports, __o, __o0) {
+define(["require", "exports", "nu-stream/stream", "nu-stream/select"], (function(require, exports, __o, __o0) {
     "use strict";
     var path, lefts, rights, children, parent, hasChildren, hasParent, isRoot, isChild, isLeaf, isFirst, isLast,
             up, down, left, right, root, leftmost, rightmost, leftLeaf, rightLeaf, nextUpDfs, nextDfs, prevDfs,

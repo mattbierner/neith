@@ -1,4 +1,4 @@
-define(["require", "exports", "./zipper", "nu-stream::stream", "nu-stream::select"], (function(require, exports, zipper,
+define(["require", "exports", "./zipper", "nu-stream/stream", "nu-stream/select"], (function(require, exports, zipper,
     stream, __o) {
     "use strict";
     var edgePath, nodePath, node, edge, childNode, parentNode, childNodes, child, nthChild, sibling, setNode,
