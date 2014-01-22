@@ -1,15 +1,23 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/tree.kep'
- * DO NOT EDIT
-*/
-define(["require", "exports", "./zipper", "nu-stream/stream", "nu-stream/select"], (function(require, exports, __o, __o,
-    __o) {
+define(["require", "exports", "./zipper", "nu-stream::stream", "nu-stream::select"], (function(require, exports, zipper,
+    stream, __o) {
     "use strict";
-    var skip = __o["skip"],
-        skip = __o["skip"],
-        skip = __o["skip"];
     var edgePath, nodePath, node, edge, childNode, parentNode, childNodes, child, nthChild, sibling, setNode,
             modifyNode, setEdge, modifyEdge, insertLeft, insertRight, insertChild, appendChild, treeZipper;
+    var zipper = zipper,
+        right = zipper["right"],
+        left = zipper["left"],
+        up = zipper["up"],
+        down = zipper["down"],
+        stream = stream,
+        cons = stream["cons"],
+        first = stream["first"],
+        foldl = stream["foldl"],
+        indexed = stream["indexed"],
+        isStream = stream["isStream"],
+        map = stream["map"],
+        toArray = stream["toArray"],
+        __o = __o,
+        skip = __o["skip"];
     var toStream = (function(s) {
         return (isStream(s) ? s : stream.from(s));
     });
@@ -154,4 +162,4 @@ define(["require", "exports", "./zipper", "nu-stream/stream", "nu-stream/select"
     (exports.insertChild = insertChild);
     (exports.appendChild = appendChild);
     (exports.treeZipper = treeZipper);
-}));
+}))

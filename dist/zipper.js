@@ -1,15 +1,20 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/zipper.kep'
- * DO NOT EDIT
-*/
-define(["require", "exports", "nu-stream/stream", "nu-stream/select"], (function(require, exports, __o0, __o0) {
+define(["require", "exports", "nu-stream::stream", "nu-stream::select"], (function(require, exports, __o, __o0) {
     "use strict";
-    var skip = __o0["skip"],
-        skip = __o0["skip"];
     var path, lefts, rights, children, parent, hasChildren, hasParent, isRoot, isChild, isLeaf, isFirst, isLast,
             up, down, left, right, root, leftmost, rightmost, leftLeaf, rightLeaf, nextUpDfs, nextDfs, prevDfs,
             extract, replace, modify, remove, setLefts, modifyLefts, setRights, modifyRights, insertLeft,
             insertRight, insertChild, appendChild, zipper;
+    var __o = __o,
+        append = __o["append"],
+        cons = __o["cons"],
+        first = __o["first"],
+        rest = __o["rest"],
+        isEmpty = __o["isEmpty"],
+        NIL = __o["NIL"],
+        foldl = __o["foldl"],
+        reverse = __o["reverse"],
+        __o0 = __o0,
+        skip = __o0["skip"];
     var flip = (function(f) {
         return (function(x, y) {
             return f(y, x);
@@ -272,4 +277,4 @@ define(["require", "exports", "nu-stream/stream", "nu-stream/select"], (function
     (exports.insertChild = insertChild);
     (exports.appendChild = appendChild);
     (exports.zipper = zipper);
-}));
+}))

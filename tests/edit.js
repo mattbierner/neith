@@ -13,7 +13,6 @@ var $n = function(val, children) {
     return new nary.Nary(val, Object.keys(children), children);
 };
 
-
 var binary1 = $(1,
     $(2,
         $(3, null, null),
@@ -37,6 +36,7 @@ var nary1 = $n(1, {
     }),
     8: $n(8, {})
 });
+
 
 
 exports.simple = function(test) {
