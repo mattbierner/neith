@@ -1,12 +1,8 @@
 var zipper = require('../index').zipper;
-var tree = require('../index').tree;
 var list = require('../index').list;
 
 var stream = require('nu-stream').stream;
 var gen = require('nu-stream').gen;
-
-var binary = require('./binary');
-var nary = require('./nary');
 
 
 var list1 = stream.from([1, 2, 3]);

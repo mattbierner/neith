@@ -17,99 +17,95 @@ var zipper = require("./zipper"),
     map = stream["map"],
     toArray = stream["toArray"],
     __o = require("nu-stream")["select"],
-    skip = __o["skip"];
-var edgePath, nodePath, node, edge, childNode, parentNode, childNodes, child, nthChild, sibling, setNode, modifyNode,
-        setEdge, modifyEdge, insertLeft, insertRight, insertChild, appendChild, treeZipper;
-var toStream = (function(s) {
-    return (isStream(s) ? s : stream.from(s));
-});
-var indexOf = (function(e, s) {
-    return foldl((function(p, __o0) {
-        var i = __o0[0],
-            c = __o0[1];
-        return ((p >= 0) ? p : ((c === e) ? i : p));
-    }), -1, indexed(s));
-});
-var Pair = (function(key, value) {
+    skip = __o["skip"],
+    Pair, pairKey, pairValue, edgePath, nodePath, node, edge, childNode, parentNode, childNodes, child, nthChild,
+        sibling, setNode, modifyNode, setEdge, modifyEdge, insertLeft, insertRight, insertChild, appendChild,
+        treeZipper, toStream = (function(s) {
+            return (isStream(s) ? s : stream.from(s));
+        }),
+    indexOf = (function(e, s) {
+        return foldl((function(p, __o0) {
+            var i = __o0[0],
+                c = __o0[1];
+            return ((p >= 0) ? p : ((c === e) ? i : p));
+        }), -1, indexed(s));
+    });
+(Pair = (function(key, value) {
     return ({
         "key": key,
         "value": value
     });
-});
-var key = (function(__o0) {
+}));
+(pairKey = (function(__o0) {
     var key = __o0["key"];
     return key;
-});
-var value = (function(__o0) {
+}));
+(pairValue = (function(__o0) {
     var value = __o0["value"];
     return value;
-});
+}));
 (node = (function(f, g) {
     return (function(x) {
         return f(g(x));
     });
-})(value, zipper.extract));
+})(pairValue, zipper.extract));
 (edge = (function(f, g) {
     return (function(x) {
         return f(g(x));
     });
-})(key, zipper.extract));
-(edgePath = (function(f, g) {
-    return (function(x) {
-        return f(g(x));
-    });
-})(map.bind(null, key), zipper.path));
+})(pairKey, zipper.extract));
 (nodePath = (function(f, g) {
     return (function(x) {
         return f(g(x));
     });
-})(map.bind(null, value), zipper.path));
+})(map.bind(null, pairValue), zipper.path));
+(edgePath = (function(f, g) {
+    return (function(x) {
+        return f(g(x));
+    });
+})(map.bind(null, pairKey), zipper.path));
 (parentNode = (function(f, g) {
     return (function(x) {
         return f(g(x));
     });
-})(value, zipper.parent));
+})(pairValue, zipper.parent));
 (childNodes = (function(f, g) {
     return (function(x) {
         return f(g(x));
     });
-})(map.bind(null, value), zipper.children));
+})(map.bind(null, pairValue), zipper.children));
 (childNode = (function(edge, ctx) {
     var c = child(edge, ctx);
     return (c ? node(c) : null);
 }));
-(nthChild = (function() {
-        var goRight = (function(ctx, count) {
-            return ((count <= 0) ? ctx : goRight(right(ctx), (count - 1)));
-        });
-        return (function(index, ctx) {
-            var child = down(ctx);
-            return (child ? goRight(child, index) : null);
-        });
-    })
-    .call(this));
+var goRight = (function(ctx, count) {
+    return ((count <= 0) ? ctx : goRight(right(ctx), (count - 1)));
+});
+(nthChild = (function(index, ctx) {
+    var child = down(ctx);
+    return (child ? goRight(child, index) : null);
+}));
 (child = (function(edge, ctx) {
     return (!ctx ? null : (function() {
-            var children = zipper.children(ctx),
-                index = indexOf(edge, map(key, children));
-            return ((index === -1) ? null : nthChild(index, ctx));
-        })
-        .call(this));
+        var children = zipper.children(ctx),
+            index = indexOf(edge, map(pairKey, children));
+        return ((index === -1) ? null : nthChild(index, ctx));
+    })());
 }));
 (sibling = (function(edge, ctx) {
     return child(edge, up(ctx));
 }));
 (setNode = (function(node, ctx) {
-    return zipper.replace(Pair(key(zipper.extract(ctx)), node), ctx);
+    return zipper.replace(Pair(edge(ctx), node), ctx);
 }));
 (modifyNode = (function(f, ctx) {
     return setNode(f(node(ctx)), ctx);
 }));
 (setEdge = (function(edge, ctx) {
-    return zipper.replace(Pair(key(zipper.extract(ctx)), node), ctx);
+    return zipper.replace(Pair(edge, node(ctx)), ctx);
 }));
 (modifyEdge = (function(f, ctx) {
-    return setNode(f(edge(ctx)), ctx);
+    return setEdge(f(edge(ctx)), ctx);
 }));
 (insertLeft = (function(edge, node, ctx) {
     return zipper.insertLeft(Pair(edge, node), ctx);
@@ -123,28 +119,29 @@ var value = (function(__o0) {
 (appendChild = (function(edge, node, ctx) {
     return zipper.appendChild(Pair(edge, node), ctx);
 }));
-(treeZipper = (function() {
-        var reducer = (function(p, __o0) {
-            var key = __o0["key"],
-                value = __o0["value"];
-            (p[key] = value);
-            return p;
+var reducer = (function(p, __o0) {
+    var key = __o0["key"],
+        value = __o0["value"];
+    if (!p.hasOwnProperty(key))(p[key] = value);
+    return p;
+});
+(treeZipper = (function(edges, getChild, constructNode, focus) {
+    var children = (function(__o0) {
+        var value = __o0["value"];
+        return map((function(x) {
+            return Pair(x, getChild(value, x));
+        }), toStream(edges(value)));
+    }),
+        _constructNode = (function(parent, children) {
+            return Pair(pairKey(parent), constructNode(pairValue(parent), children, (function() {
+                return foldl(reducer, ({}), children);
+            })));
         });
-        return (function(edges, getChild, constructNode, focus) {
-            var children = (function(__o0) {
-                var value = __o0["value"];
-                return map((function(x) {
-                    return Pair(x, getChild(value, x));
-                }), toStream(edges(value)));
-            }),
-                _constructNode = (function(parent, children) {
-                    return Pair(key(parent), constructNode(value(parent), children, toArray(map(key,
-                        children)), foldl(reducer, ({}), children)));
-                });
-            return zipper.zipper(children, _constructNode, Pair(null, focus));
-        });
-    })
-    .call(this));
+    return zipper.zipper(children, _constructNode, Pair(null, focus));
+}));
+(exports.Pair = Pair);
+(exports.pairKey = pairKey);
+(exports.pairValue = pairValue);
 (exports.edgePath = edgePath);
 (exports.nodePath = nodePath);
 (exports.node = node);

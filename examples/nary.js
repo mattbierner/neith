@@ -1,10 +1,11 @@
 /**
- * @fileOverview Basic binary tree for testing purposes.
+ * @fileOverview Basic k-ary tree for testing purposes.
  */
 var zipper = require('../index').zipper;
 var tree = require('../index').tree;
+var stream = require('nu-stream').stream;
 
-/* Binary
+/* Nary
  ******************************************************************************/
 var Nary = function(value, children, childValues) {
     this.value = value;
@@ -12,16 +13,12 @@ var Nary = function(value, children, childValues) {
     this.childValues = childValues;
 };
 
-Nary.prototype.print = function() {
-    var self = this;
-    return '{' + this.value + " " +
-        this.children.map(function(x) { return self[x]; }.join(' ') + '}');
+Nary.construct = function(x, edges, children) {
+    var c = stream.toArray(edges);
+    return new Nary(x.value,
+        c.map(tree.pairKey),
+        children());
 };
-
-Nary.construct = function(x, _, children, values) {
-    return new Nary(x.value, children, values);
-};
-
 
 var walk = function(root, path) {
     path = path || [];

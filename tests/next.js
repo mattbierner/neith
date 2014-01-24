@@ -1,7 +1,7 @@
 var zipper = require('../index').zipper;
 var tree = require('../index').tree;
 
-var binary = require('./binary');
+var binary = require('../examples/binary');
 
 var $ = function(val, l, r) {
     return new binary.Binary(val, l, r);

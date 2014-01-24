@@ -1,6 +1,19 @@
 # ChangeLog #
 
-## 1.2.0 - November 16, 2014
+## 1.3.0 - January 24, 2014
+* Changed the arguments passed to constructNode to be safer for infinite data
+  structures.
+** 3 arguments instead of 4 are passed: The node, the complete ordered `Pair` 
+  stream of child nodes, and a function that returns a map of edges as strings
+  to values. This last argument is only for convenience. It assumes unique string
+  edges and will hang with if called when a node has infinite children.
+* Updated the edge to node map returned to always give the first, instead of the
+  last, node for a given edge name.
+* Exported `Pair` for tree with `getKey` and `getValue` getter functions for
+  simplify to map. `Pair` should only ever be needed in construct functions.
+* Fixed `setEdge` and `modifyEdge`.
+
+## 1.2.0 - January 22, 2014
 * Added node package
 
 ## 1.1.0 - November 16, 2013

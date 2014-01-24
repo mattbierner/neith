@@ -1,5 +1,5 @@
 /**
- * @fileOverview Basic binary tree for testing purposes.
+ * @fileOverview Very basic binary tree zipper.
  */
 var zipper = require('../index').zipper;
 var tree = require('../index').tree;
@@ -12,13 +12,8 @@ var Binary = function(value, left, right) {
     this.right = right;
 };
 
-Binary.prototype.print = function() {
-    return '{' + this.value + " " +
-        (this.left ? this.left.print() : '{}')  + " "+
-        (this.right ? this.right.print() : '{}') + '}';
-};
-
-Binary.construct = function(x, _, _, children) {
+Binary.construct = function(x, _, getChilden) {
+    var children = getChilden();
     return new Binary(x.value,
         children.left,
         children.right)

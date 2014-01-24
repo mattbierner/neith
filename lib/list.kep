@@ -9,6 +9,7 @@ with
     import 'nu-stream::stream' {
         isStream
         from
+        map
         toArray
         NIL},
     import './zipper' {
@@ -28,7 +29,7 @@ in {
  *   into the stream and `zipper.up` to rebuild it.
  */
 listZipper = let
-    children = \s -> (isStream(s) ? s : NIL),
+    children = \s -> ?isStream(s) :s :NIL,
     construct = \_ children -> children
 in
     (zipper,
@@ -47,9 +48,9 @@ in
  * @param rights Stream of right siblings.
  */
 listZipperIn = \lefts, focus, rights ->
-    (listZipper(focus)
+    listZipper(focus)
         |> (setLefts, lefts)
-        |> (setRights, rights));
+        |> (setRights, rights);
 
 /**
  * Create a zipper for an array.
@@ -59,7 +60,7 @@ listZipperIn = \lefts, focus, rights ->
  * @param arr Array starting point.
  */
 arrayZipper = let
-    children = \s -> (Array.isArray(s) ? from(s) : NIL),
+    children = \s -> ?Array.isArray(s) :from(s) :NIL,
     construct = \_ children -> toArray(children)
 in
     (zipper,

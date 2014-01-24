@@ -1,8 +1,8 @@
 var zipper = require('../index').zipper;
 var tree = require('../index').tree;
 
-var binary = require('./binary');
-var nary = require('./nary');
+var binary = require('../examples/binary');
+var nary = require('../examples/nary');
 
 
 var $ = function(val, l, r) {
