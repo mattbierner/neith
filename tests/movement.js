@@ -39,18 +39,7 @@ var nary1 = $n(1, {
     8: $n(8, {})
 });
 
-var CountBinaryTree = tree.treeZipper(
-    function(element) {
-        return stream.from(['left', 'right']);},
-    
-    getChild = function(x, edge) {
-        return (2 * x) + (edge === 'left' ? 1 : 2);
-    },
-    function(x, _1, _2) {return x},
-    0);
 
-console.log(
-    tree.node(zipper.down(zipper.right(zipper.down(zipper.down(CountBinaryTree))))))
 
 exports.down = function(test) {
     var z = zipper.down(binary.zipper(binary1));

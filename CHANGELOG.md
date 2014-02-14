@@ -1,5 +1,9 @@
 # ChangeLog #
 
+## 1.4.0 - January 24, 2014
+* Added `zipper.detach` to make current node the root.
+* Added `zipper::walk` module for traversing trees with editing and removal.
+
 ## 1.3.0 - January 24, 2014
 * Changed the arguments passed to constructNode to be safer for infinite data
   structures.

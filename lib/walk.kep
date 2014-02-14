@@ -1,0 +1,82 @@
+/**
+ * @fileOverview Walking operations 
+ */
+package (
+    walk
+    postWalk
+    preWalk)
+with
+    import './zipper' zipper#{
+        isLeaf
+        isLast
+        isRoot
+        detach
+        up
+        down
+        right}
+in {
+
+var id = \x -> x;
+
+var merge = \ctx o ->
+    ?o
+        :ctx.setLoc(ctx.loc.setFocus(o && o.loc.focus))
+        :o;
+
+
+/**
+ * Visit all descendants in dep in depth first order.
+ * 
+ * The zipper operations may not traverse out of the walk root.
+ * 
+ * @param pre Zipper operation called before visiting descendants. This may 
+ *   edit the node to change the descendants that will be visited.
+ * @param post Zipper operation called after all of a node's descendants have
+ *   been visited. The walk is resumed from wherever post moves to.
+ *   
+ */
+walk = let
+    impl = \pre post ctx -> {
+        var t = pre(ctx);
+        
+        if (isLeaf t) {
+            do {
+                t = post(t);
+                if (isLast t) {
+                    if (isRoot t)
+                        return t;
+                    t = up t;
+                } else {
+                    return impl(pre, post, right t);
+                }
+            } while (true);
+        }
+        return impl(pre, post, down t);
+    }
+in
+    \pre post ctx ->
+        merge(ctx, impl(pre, post, detach ctx));
+
+/**
+ * Post, depth first traversal of zipper.
+ * 
+ * @see walk
+ * 
+ * @param post
+ * @param ctx
+ */
+postWalk = \post ctx ->
+    walk(id, post, ctx);
+
+/**
+ * Pre, depth first traversal of zipper
+ * 
+ * @see walk
+ * 
+ * @param pre
+ * @param ctx
+ */
+preWalk = \pre ctx ->
+    walk(pre, id, ctx);
+
+}

@@ -86,10 +86,10 @@ var goRight = (function(ctx, count) {
     return (child ? goRight(child, index) : null);
 }));
 (child = (function(edge, ctx) {
-    return (!ctx ? null : (function() {
+    return ((!ctx) ? null : (function() {
         var children = zipper.children(ctx),
             index = indexOf(edge, map(pairKey, children));
-        return ((index === -1) ? null : nthChild(index, ctx));
+        return ((index >= 0) ? nthChild(index, ctx) : null);
     })());
 }));
 (sibling = (function(edge, ctx) {
@@ -122,7 +122,7 @@ var goRight = (function(ctx, count) {
 var reducer = (function(p, __o0) {
     var key = __o0["key"],
         value = __o0["value"];
-    if (!p.hasOwnProperty(key))(p[key] = value);
+    if ((!p.hasOwnProperty(key)))(p[key] = value);
     return p;
 });
 (treeZipper = (function(edges, getChild, constructNode, focus) {

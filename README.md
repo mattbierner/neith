@@ -23,7 +23,6 @@ supports zippers for variations of n-ary ordered trees with labeled edges.
 ## With node
 Library code is in `dist_node` directory.
 
-
     $ npm install neith
 
     var zipper = require('neith').zipper;

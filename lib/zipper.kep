@@ -51,6 +51,7 @@ package (
     insertChild
     appendChild
 
+    detach
 // Zipper Creation
     zipper)
 with
@@ -71,70 +72,66 @@ var flip = \f -> \x y -> f(y, x);
 
 // Context
 ////////////////////////////////////////
-var Context = function(loc, children, constructNode) {
-    this.loc = loc;
-    this.children = children;
-    this.constructNode = constructNode;
+var Context = function\loc, children, constructNode =self -> {
+    self.loc = loc;
+    self.children = children;
+    self.constructNode = constructNode;
 };
 
-Context.setLoc = \ctx, loc ->
+Context.prototype.setLoc = \loc =self->
     new Context(
         loc,
-        ctx.children,
-        ctx.constructNode);
+        self.children,
+        self.constructNode);
 
 // Loc
 ////////////////////////////////////////
-var Loc = function(focus, parent, path, left, right) {
-    this.focus = focus;
-    this.parent = parent;
-    this.path = path;
-    this.left = left;
-    this.right = right;
+var Loc = function\focus, parent, path, left, right =self -> {
+    self.focus = focus;
+    self.parent = parent;
+    self.path = path;
+    self.left = left;
+    self.right = right;
 };
 
 Loc.empty = new Loc(null, null, NIL, NIL, NIL);
 
-Loc.setFocus = \loc, focus ->
+Loc.prototype.setFocus = \focus =self->
     new Loc(
         focus,
-        loc.parent,
-        loc.path,
-        loc.left,
-        loc.right);
+        self.parent,
+        self.path,
+        self.left,
+        self.right);
 
-Loc.setLeft = \loc, left ->
+Loc.prototype.setLeft = \left =self->
     new Loc(
-        loc.focus,
-        loc.parent,
-        loc.path,
+        self.focus,
+        self.parent,
+        self.path,
         left,
-        loc.right);
+        self.right);
 
-Loc.setRight = \loc, right ->
+Loc.prototype.setRight = \right =self->
     new Loc(
-        loc.focus,
-        loc.parent,
-        loc.path,
-        loc.left,
+        self.focus,
+        self.parent,
+        self.path,
+        self.left,
         right);
 
-Loc.setSurround = \loc, left, focus, right ->
-    Loc.setRight(
-        Loc.setLeft(
-            Loc.setFocus(loc, focus),
-            left),
-        right);
+Loc.prototype.setSurround = \left, focus, right =self->
+    self.setFocus(focus).setLeft(left).setRight(right);
 
 /* Internal operations
  ******************************************************************************/
 var getLoc = \ctx -> ctx.loc;
 
-var setLoc = \ctx, loc -> Context.setLoc(ctx, loc);
+var setLoc = \ctx, loc -> ctx.setLoc(loc);
 
 var modifyLoc = \ctx, f -> setLoc(ctx, f(getLoc(ctx)));
 
-var setFocus = \ctx, f -> modifyLoc(ctx, \loc -> Loc.setFocus(loc, f));
+var setFocus = \ctx, f -> modifyLoc(ctx, \loc -> loc.setFocus(f));
 
 var getPath = \ctx -> getLoc(ctx).path;
 
@@ -210,7 +207,7 @@ hasChildren = children \> (!) <\ isEmpty;
 /**
  * Does the focus have a parent?
  */
-hasParent = parent \> (!==, null);
+hasParent = parent \> (!==)@null;
 
 /**
  * Is the focus a root node?
@@ -245,11 +242,10 @@ isLast = rights \> isEmpty;
  * Returns null if the focus has no parent.
  */
 up = \ctx ->
-    (isRoot(ctx) ? null :
-        setLoc(ctx,
-            Loc.setFocus(
-                parent(ctx),
-                constructParent(ctx))));
+    ?isRoot ctx
+        :null
+        :setLoc(ctx,
+            parent(ctx).setFocus(constructParent(ctx)));
 
 /**
  * Move downwards to the leftmost child of the focus.
@@ -257,15 +253,16 @@ up = \ctx ->
  * Returns null if the focus has no children.
  */
 down = \ctx ->
-    (isLeaf(ctx) ? null :
-        setLoc(ctx,
+    ?isLeaf ctx
+        :null
+        :setLoc(ctx,
             let cs = children(ctx) in
                 new Loc(
                     first(cs),
                     getLoc(ctx),
                     pushPath(extract(ctx), ctx),
                     NIL,
-                    rest(cs))));
+                    rest(cs)));
 
 /**
  * Move left to the next left sibling of the focus.
@@ -273,13 +270,14 @@ down = \ctx ->
  * Returns null if there are no left siblings.
  */
 left = \ctx ->
-    (isFirst(ctx) ? null :
-        setLoc(ctx,
+    ?isFirst ctx
+        :null
+        :setLoc(ctx,
             let ls = lefts(ctx) in
-                Loc.setSurround(getLoc(ctx),
+                getLoc(ctx).setSurround(
                     rest(ls),
                     first(ls),
-                    cons(extract(ctx), rights(ctx)))));
+                    cons(extract(ctx), rights(ctx))));
 
 /**
  * Move right to the next right sibling of the focus.
@@ -287,13 +285,14 @@ left = \ctx ->
  * Returns null if there are no right siblings.
  */
 right = \ctx ->
-    (isLast(ctx) ? null :
-        setLoc(ctx,
+    ?isLast ctx
+        :null
+        :setLoc(ctx,
             let rs = rights(ctx) in
-                Loc.setSurround(getLoc(ctx),
+                getLoc(ctx).setSurround(
                     cons(extract(ctx), lefts(ctx)),
                     first(rs),
-                    rest(rs))));
+                    rest(rs)));
 
 /* Compound Movement
  ******************************************************************************/
@@ -303,8 +302,10 @@ right = \ctx ->
  * Returns the focus if it is the root.
  */
 root = \ctx ->
-    let parent = up(ctx) in
-        (parent ? root(parent) : ctx);
+    let parent = up ctx in
+        ?parent
+            :root parent
+            :ctx;
 
 /**
  * Move to the leftmost sibling of the focus.
@@ -312,8 +313,10 @@ root = \ctx ->
  * Returns the focus if it has no left siblings.
  */
 leftmost = \ctx ->
-    let l = left(ctx) in
-        (l ? leftmost(l) : ctx);
+    let l = left ctx in
+        ?l
+            :leftmost l
+            :ctx;
 
 /**
  * Move to the rightmost sibling of the focus.
@@ -321,8 +324,10 @@ leftmost = \ctx ->
  * Returns the focus if it has no right siblings.
  */
 rightmost = \ctx ->
-    let r = right(ctx) in
-        (r ? rightmost(r) : ctx);
+    let r = right ctx in
+        ?r
+            :rightmost r
+            :ctx;
 
 /**
  * Move to the leftmost leaf of the focus.
@@ -330,8 +335,10 @@ rightmost = \ctx ->
  * Returns the focus if it has no children.
  */
 leftLeaf = \ctx ->
-    let child = down(ctx) in
-        (child ? leftLeaf(child) : ctx);
+    let child = down ctx in
+        ?child
+            :leftLeaf child
+            :ctx;
 
 /**
  * Move to the rightmost leaf of the focus.
@@ -339,10 +346,10 @@ leftLeaf = \ctx ->
  * Returns the focus if it has no children.
  */
 rightLeaf = \ctx ->
-    let child = down(ctx) in
-        (child ?
-            rightLeaf(rightmost(child)) :
-            ctx);
+    let child = down ctx in
+        ?child
+            :rightLeaf(rightmost child)
+            :ctx;
 
 /**
  * Move to the next node in a DFS excluding the focus's children.
@@ -350,25 +357,25 @@ rightLeaf = \ctx ->
  * Returns null if at root.
  */
 nextUpDfs = \ctx ->
-    let parent = up(ctx) in 
-        (parent ?
-            (right(parent) || nextUpDfs(parent)) :
-            parent);
+    let parent = up ctx in 
+        ?parent
+            :(right parent || nextUpDfs parent)
+            :parent;
 
 /**
  * Move to the next node in a DFS traversal.
  */
 nextDfs = \ctx ->
-    (down(ctx) || right(ctx) || nextUpDfs(ctx));
+    (down ctx || right ctx || nextUpDfs ctx);
 
 /**
  * Move to the previous node in a DFS traversal.
  */
 prevDfs = \ctx ->
-    let l = left(ctx) in
-        (l ?
-            rightLeaf(l) :
-            up(ctx));
+    let l = left ctx in
+        ?l
+            :rightLeaf l
+            :up ctx;
 
 /* Editing
  ******************************************************************************/
@@ -378,7 +385,7 @@ prevDfs = \ctx ->
  * @param node Replacement.
  * @param ctx
  */
-replace = flip(setFocus);
+replace = flip setFocus;
 
 /**
  * Modify focus with function `f` and replace it with result.
@@ -396,13 +403,13 @@ modify = \f, ctx ->
  * Returns null if the focus has no parent.
  */
 remove = \ctx ->
-    (isLast(ctx) ?
-        (isFirst(ctx) ?
-            (hasParent(ctx) ? constructParent(ctx) : null) :
-            setRights(NIL, left(ctx))) :
-        modifyLefts(
-            (skip, 2),
-            right(ctx)));
+    ?isLast ctx
+        :?isFirst ctx
+            :?hasParent ctx :constructParent ctx :null
+            :setRights(NIL, left ctx)
+        :modifyLefts(
+            skip@1,
+            right ctx);
 
 /**
  * Set the lefts of the focus.
@@ -412,7 +419,7 @@ remove = \ctx ->
  * @param ctx
  */
 setLefts = \ls, ctx ->
-    modifyLoc(ctx, \loc -> Loc.setLeft(loc, ls));
+    modifyLoc(ctx, \loc -> loc.setLeft(ls));
 
 /**
  * Modify the current lefts of the focus.
@@ -421,7 +428,7 @@ setLefts = \ls, ctx ->
  * @param ctx
  */
 modifyLefts = \f, ctx ->
-    setLefts(f(lefts(ctx)), ctx);
+    setLefts(f(lefts ctx), ctx);
 
 /**
  * Set the rights of the focus.
@@ -430,7 +437,7 @@ modifyLefts = \f, ctx ->
  * @param ctx
  */
 setRights = \rs, ctx ->
-    modifyLoc(ctx, \loc -> Loc.setRight(loc, rs));
+    modifyLoc(ctx, \loc -> loc.setRight(rs));
 
 /**
  * Modify the rights lefts of the focus.
@@ -439,44 +446,53 @@ setRights = \rs, ctx ->
  * @param ctx
  */
 modifyRights = \f, ctx ->
-    setRights(f(rights(ctx)), ctx);
+    setRights(f(rights ctx), ctx);
 
 /**
  * Insert a sibling to the left of the focus. Stays in the current location.
  */
 insertLeft = \node, ctx ->
-    modifyLefts((cons, node), ctx);
+    modifyLefts(cons@node, ctx);
 
 /**
  * Insert a sibling to the right of the focus. Stays in the current location.
  */
 insertRight = \node, ctx ->
-    modifyRights((cons, node), ctx);
+    modifyRights(cons@node, ctx);
 
 /**
  * Insert a left child for the focus. Stays in the current location.
  */
 insertChild = \node, ctx ->
-    (hasChildren(ctx) ?
-        (ctx
+    ?hasChildren ctx
+        :(ctx
             |> down
-            |> (insertLeft, node)
-            |> up) :
-        replace(
+            |> insertLeft@node
+            |> up)
+        :replace(
             construct(ctx, extract(ctx), cons(node, NIL)),
-            ctx));
+            ctx);
 
 /**
  * Insert a child at the right for the focus. Stays in current location.
  */
 appendChild = \node, ctx ->
-    (hasChildren(ctx) ?
-        (ctx
+    ?hasChildren ctx
+        :(ctx
             |> down
             |> rightmost
-            |> (insertRight, node)
-            |> up) :
-        insertChild(node, ctx));
+            |> insertRight@node
+            |> up)
+        :insertChild(node, ctx);
+
+/* Context editing
+ ******************************************************************************/
+/**
+ * Treat the current node as the root of the zipper.
+ */
+detach = \ctx ->
+    setLoc(ctx,
+        Loc.empty.setFocus(extract ctx));
 
 /* Zipper
  ******************************************************************************/
@@ -490,7 +506,7 @@ appendChild = \node, ctx ->
  */
 zipper = \children, constructNode, focus ->
     new Context(
-        Loc.setFocus(Loc.empty, focus),
+        Loc.empty.setFocus(focus),
         children,
         constructNode);
 

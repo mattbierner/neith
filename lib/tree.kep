@@ -61,7 +61,7 @@ with
 in {
 
 var toStream = \s ->
-    ?isStream(s)
+    ?isStream s
         :s
         :stream.from(s);
 
@@ -69,7 +69,7 @@ var indexOf = \e, s ->
     foldl(
         \p [i c] ->
             ?p >= 0 :p :(?c === e :i :p),
-        -1,
+        --1,
         indexed <| s);
     
 /* Pair
@@ -100,14 +100,14 @@ edge = zipper.extract \> pairKey;
  * 
  * @return Stream.
  */
-nodePath = zipper.path \> (map, pairValue);
+nodePath = zipper.path \> map@pairValue;
 
 /**
  * Get list edges leading to the focus.
  * 
  * @return Stream.
  */
-edgePath = zipper.path \> (map, pairKey);
+edgePath = zipper.path \> map@pairKey;
 
 /**
  * Get the value of the parent of the focus.
@@ -117,14 +117,16 @@ parentNode = zipper.parent \> pairValue;
 /**
  * Get the values of all children of the focus.
  */
-childNodes = zipper.children \> (map, pairValue);
+childNodes = zipper.children \> map@pairValue;
 
 /**
  * Get the value of a child.
  */
 childNode = \edge ctx ->
     let c = child(edge, ctx) in
-        ?c :node(c) :null;
+        ?c
+            :node c
+            :null;
 
 /* Labeled Movement
  ******************************************************************************/
@@ -139,10 +141,10 @@ nthChild = let
     goRight = \ctx, count ->
         ?count <= 0
             :ctx
-            :goRight(right(ctx), count - 1)
+            :goRight(right ctx, count - 1)
 in
     \index, ctx ->
-        let child = down(ctx) in
+        let child = down ctx in
             ?child
                 :goRight(child, index)
                 :null;
@@ -155,14 +157,15 @@ in
  * @param edge Label of edge to move on.
  */
 child = \edge, ctx ->
-    ?!ctx :null
+    ?!ctx
+        :null
         :let
             children = zipper.children(ctx),
             index = indexOf(edge, map(pairKey, children))
         in
-            ?index === -1
-                :null
-                :nthChild(index, ctx);
+            ?index >= 0
+                :nthChild(index, ctx)
+                :null;
 
 /**
  * Move to the sibling with `edge` leading from the focus's parent.
@@ -173,9 +176,9 @@ child = \edge, ctx ->
  * @param edge Label of edge to move on.
  */
 sibling = \edge ctx ->
-    ctx
+    (ctx
         |> up
-        |> (child, edge);
+        |> child@edge);
 
 /* Basic Editing
  * 
@@ -191,7 +194,7 @@ sibling = \edge ctx ->
  */
 setNode = \node, ctx ->
     zipper.replace(
-        Pair(edge(ctx), node),
+        Pair(edge ctx, node),
         ctx);
 
 /**
@@ -204,7 +207,7 @@ setNode = \node, ctx ->
  */
 modifyNode = \f, ctx ->
     setNode(
-        f(node(ctx)),
+        f(node ctx),
         ctx);
 
 /**
@@ -217,7 +220,7 @@ modifyNode = \f, ctx ->
  */
 setEdge = \edge, ctx ->
     zipper.replace(
-        Pair(edge, node(ctx)),
+        Pair(edge, node ctx),
         ctx);
 
 /**
@@ -230,7 +233,7 @@ setEdge = \edge, ctx ->
  */
 modifyEdge = \f, ctx ->
     setEdge(
-        f(edge(ctx)),
+        f(edge ctx),
         ctx);
     
 /* Labled Editing
@@ -290,7 +293,7 @@ appendChild = \edge, node, ctx ->
 treeZipper = let
     reducer = \p {key value} -> {
         if (!p.hasOwnProperty(key))
-            p[key] = value;
+            p.(key) = value;
         return p;
     }
 in
