@@ -4,6 +4,8 @@
 var zipper = require('../index').zipper;
 var tree = require('../index').tree;
 
+var stream = require('nu-stream').stream;
+
 /* Binary
  ******************************************************************************/
 var Binary = function(value, left, right) {
@@ -31,12 +33,12 @@ var binaryZipper = function(root) {
     return tree.treeZipper(
         function(x) {
             if (x.left && x.right)
-                return ['left', 'right'];
+                return stream.from(['left', 'right']);
             else if (x.left)
-                return ['left'];
+                return stream.from(['left']);
             else if (x.right)
-                return ['right'];
-            return [];
+                return stream.from(['right']);
+            return stream.NIL;
         },
         function(r, c) { return r[c]; },
         Binary.construct,

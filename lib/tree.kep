@@ -25,7 +25,6 @@ package (
 
 // Labeled Movement
     child
-    nthChild
     sibling
     
 // Basic Editing
@@ -50,28 +49,11 @@ with
         up
         down},
     import 'nu-stream::stream' stream#{
-        cons
-        first
         foldl
-        indexed
-        isStream
-        map
-        toArray},
+        map},
     import 'nu-stream::select' {skip}
 in {
 
-var toStream = \s ->
-    ?isStream s
-        :s
-        :stream.from(s);
-
-var indexOf = \e, s ->
-    foldl(
-        \p [i c] ->
-            ?p >= 0 :p :(?c === e :i :p),
-        --1,
-        indexed <| s);
-    
 /* Pair
  ******************************************************************************/
 Pair = \key value -> ({'key': key, 'value': value});
@@ -131,23 +113,20 @@ childNode = \edge ctx ->
 /* Labeled Movement
  ******************************************************************************/
 /**
- * Move to the nth child of focus.
+ * Move to the sibling with `edge` leading from the focus's parent.
  * 
- * Returns null if no such child exists.
- *
- * @param index Index of child to move to.
+ * Returns null if no such sibling exists. Returns the focus if `edge`
+ * leads to it.
+ * 
+ * @param e Label of edge to move on.
+ * @param ctx
  */
-nthChild = let
-    goRight = \ctx, count ->
-        ?count <= 0
-            :ctx
-            :goRight(right ctx, count - 1)
+sibling = let
+    findEdge = \e op ctx ->
+        zipper.whilst(edge \> (!==)@e, op, ctx)
 in
-    \index, ctx ->
-        let child = down ctx in
-            ?child
-                :goRight(child, index)
-                :null;
+    \e ctx ->
+        (findEdge(e, left, ctx) || findEdge(e, right, right ctx));
 
 /**
  * Move to the child from `edge` of focus.
@@ -155,30 +134,11 @@ in
  * Returns null if no such child exists.
  * 
  * @param edge Label of edge to move on.
+ * @param ctx
  */
 child = \edge, ctx ->
-    ?!ctx
-        :null
-        :let
-            children = zipper.children(ctx),
-            index = indexOf(edge, map(pairKey, children))
-        in
-            ?index >= 0
-                :nthChild(index, ctx)
-                :null;
-
-/**
- * Move to the sibling with `edge` leading from the focus's parent.
- * 
- * Returns null if no such sibling exists. Returns the focus if `edge`
- * leads to it.
- * 
- * @param edge Label of edge to move on.
- */
-sibling = \edge ctx ->
-    (ctx
-        |> up
-        |> child@edge);
+    down ctx
+        |> sibling@edge;
 
 /* Basic Editing
  * 
@@ -301,7 +261,7 @@ in
         children = \{value} ->
             map(
                 \x -> Pair(x, getChild(value, x)),
-                toStream(edges(value))),
+                edges(value)),
             
         _constructNode = \parent, children ->
             Pair(

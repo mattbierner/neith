@@ -27,6 +27,12 @@ package (
     right
 
 // Compound Movement
+    whilst
+    recur
+    
+    seq
+    any
+    
     root
     leftmost
     rightmost
@@ -67,6 +73,8 @@ with
     import 'nu-stream::select' {
         skip}
 in {
+
+var reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight);
 
 var flip = \f -> \x y -> f(y, x);
 
@@ -186,7 +194,7 @@ extract = \ctx -> getLoc(ctx).focus;
  * 
  * @return Stream of path, may be infinite.
  */
-path = \ctx -> cons(extract(ctx), getPath(ctx));
+path = \ctx -> cons(extract ctx, getPath(ctx));
 
 /**
  * Get ordered list of the focus's left siblings.
@@ -210,7 +218,7 @@ rights = \ctx -> getLoc(ctx).right;
  * 
  * @return Stream of children, may be infinite.
  */
-children = \ctx -> ctx.children(extract(ctx));
+children = \ctx -> ctx.children(extract ctx);
 
 /**
  * Get the parent of the focus.
@@ -279,7 +287,7 @@ up = \ctx ->
 down = \ctx ->
     ?isLeaf ctx
         :null
-        :let cs = children(ctx) in
+        :let cs = children ctx in
             setLoc(ctx,
                 new Loc(
                     first cs,
@@ -297,7 +305,7 @@ down = \ctx ->
 left = \ctx ->
     ?isFirst ctx
         :null
-        :let ls = lefts(ctx) in
+        :let ls = lefts ctx in
             setLoc(ctx,
                 getLoc(ctx).setSurround(
                     rest ls,
@@ -312,7 +320,7 @@ left = \ctx ->
 right = \ctx ->
     ?isLast ctx
         :null
-        :let rs = rights(ctx) in
+        :let rs = rights ctx in
             setLoc(ctx,
                 getLoc(ctx).setSurround(
                     cons(extract ctx, lefts ctx),
@@ -322,59 +330,90 @@ right = \ctx ->
 /* Compound Movement
  ******************************************************************************/
 /**
+ * Run `op` while `pred` holds true, returning the last result.
+ * 
+ * @param pred Predicate operation taking current context.
+ * @param op Movement operation that updates the context..
+ * @param ctx
+ */
+whilst = \pred op ctx ->
+    ?ctx && pred ctx
+        :whilst(pred, op, op ctx)
+        :ctx;
+
+/**
+ * Run `op` until it fails, returning the last successful result.
+ * 
+ * @param op Movement operation mapping a context to a new context or null.
+ * @param ctx
+ */
+recur = \op ctx ->
+    let next = op ctx in
+        ?next
+            :recur(op, next)
+            :ctx;
+
+/**
+ * Perform a set of operations left to right. Returns result from first to fail or last operations.
+ * 
+ * Takes list of operations as arguments.
+ */
+seq = let
+    and = \p, c ->
+        \ctx ->
+            let next = c ctx in
+                ?next
+                    :p(next)
+                    :next
+in
+    \ops(...) ->
+        reduceRight(ops, and);
+
+/**
+ * Perform a set of operations left to right. Returns result from first to succeed.
+ * 
+ * Takes list of operations as arguments.
+ */
+any = let
+    or = \p, c -> \ctx -> c ctx || p ctx
+in
+    \ops(...) ->
+        reduceRight(ops, or);
+
+/**
  * Move to the root of the tree.
  * 
  * Returns the focus if it is the root.
  */
-root = \ctx ->
-    let parent = up ctx in
-        ?parent
-            :root parent
-            :ctx;
+root = recur@up;
 
 /**
  * Move to the leftmost sibling of the focus.
  * 
  * Returns the focus if it has no left siblings.
  */
-leftmost = \ctx ->
-    let l = left ctx in
-        ?l
-            :leftmost l
-            :ctx;
+leftmost = recur@left;
 
 /**
  * Move to the rightmost sibling of the focus.
  * 
  * Returns the focus if it has no right siblings.
  */
-rightmost = \ctx ->
-    let r = right ctx in
-        ?r
-            :rightmost r
-            :ctx;
+rightmost = recur@right;
 
 /**
  * Move to the leftmost leaf of the focus.
  * 
  * Returns the focus if it has no children.
  */
-leftLeaf = \ctx ->
-    let child = down ctx in
-        ?child
-            :leftLeaf child
-            :ctx;
+leftLeaf = recur@down;
 
 /**
  * Move to the rightmost leaf of the focus.
  * 
  * Returns the focus if it has no children.
  */
-rightLeaf = \ctx ->
-    let child = down ctx in
-        ?child
-            :rightLeaf(rightmost child)
-            :ctx;
+rightLeaf = recur@seq(down, rightmost);
 
 /**
  * Move to the next node in a DFS excluding the focus's children.
@@ -390,8 +429,7 @@ nextUpDfs = \ctx ->
 /**
  * Move to the next node in a DFS traversal.
  */
-nextDfs = \ctx ->
-    (down ctx || right ctx || nextUpDfs ctx);
+nextDfs = any(down, right, nextUpDfs);
 
 /**
  * Move to the previous node in a DFS traversal.

@@ -31,7 +31,7 @@ var walk = function(root, path) {
 
 var naryZipper = function(root) {
     return tree.treeZipper(
-        function(x) { return x.children; },
+        function(x) { return stream.from(x.children); },
         function(x, k) { return x.childValues[k]; },
         Nary.construct,
         root);

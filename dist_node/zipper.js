@@ -15,13 +15,15 @@ var __o = require("nu-stream")["stream"],
     __o0 = require("nu-stream")["select"],
     skip = __o0["skip"],
     path, lefts, rights, children, parent, hasChildren, hasParent, isRoot, isChild, isLeaf, isFirst, isLast, up, down,
-        left, right, root, leftmost, rightmost, leftLeaf, rightLeaf, nextUpDfs, nextDfs, prevDfs, extract, replace,
-        modify, remove, setLefts, modifyLefts, setRights, modifyRights, insertLeft, insertRight, insertChild,
-        appendChild, detach, zipper, flip = (function(f) {
-            return (function(x, y) {
-                return f(y, x);
-            });
-        }),
+        left, right, whilst, recur, seq, any, root, leftmost, rightmost, leftLeaf, rightLeaf, nextUpDfs, nextDfs,
+        prevDfs, extract, replace, modify, remove, setLefts, modifyLefts, setRights, modifyRights, insertLeft,
+        insertRight, insertChild, appendChild, detach, zipper, reduceRight = Function.prototype.call.bind(Array.prototype
+            .reduceRight),
+    flip = (function(f) {
+        return (function(x, y) {
+            return f(y, x);
+        });
+    }),
     Context = (function(loc, children, constructNode) {
         var self = this;
         (self.loc = loc);
@@ -191,33 +193,42 @@ var getLoc = (function(ctx) {
             .setSurround(cons(extract(ctx), lefts(ctx)), first(rs), rest(rs)));
     })());
 }));
-(root = (function(ctx) {
-    var parent = up(ctx);
-    return (parent ? root(parent) : ctx);
+(whilst = (function(pred, op, ctx) {
+    return ((ctx && pred(ctx)) ? whilst(pred, op, op(ctx)) : ctx);
 }));
-(leftmost = (function(ctx) {
-    var l = left(ctx);
-    return (l ? leftmost(l) : ctx);
+(recur = (function(op, ctx) {
+    var next = op(ctx);
+    return (next ? recur(op, next) : ctx);
 }));
-(rightmost = (function(ctx) {
-    var r = right(ctx);
-    return (r ? rightmost(r) : ctx);
+var and = (function(p, c) {
+    return (function(ctx) {
+        var next = c(ctx);
+        return (next ? p(next) : next);
+    });
+});
+(seq = (function() {
+    var ops = arguments;
+    return reduceRight(ops, and);
 }));
-(leftLeaf = (function(ctx) {
-    var child = down(ctx);
-    return (child ? leftLeaf(child) : ctx);
+var or = (function(p, c) {
+    return (function(ctx) {
+        return (c(ctx) || p(ctx));
+    });
+});
+(any = (function() {
+    var ops = arguments;
+    return reduceRight(ops, or);
 }));
-(rightLeaf = (function(ctx) {
-    var child = down(ctx);
-    return (child ? rightLeaf(rightmost(child)) : ctx);
-}));
+(root = recur.bind(null, up));
+(leftmost = recur.bind(null, left));
+(rightmost = recur.bind(null, right));
+(leftLeaf = recur.bind(null, down));
+(rightLeaf = recur.bind(null, seq(down, rightmost)));
 (nextUpDfs = (function(ctx) {
     var parent = up(ctx);
     return (parent ? (right(parent) || nextUpDfs(parent)) : parent);
 }));
-(nextDfs = (function(ctx) {
-    return ((down(ctx) || right(ctx)) || nextUpDfs(ctx));
-}));
+(nextDfs = any(down, right, nextUpDfs));
 (prevDfs = (function(ctx) {
     var l = left(ctx);
     return (l ? rightLeaf(l) : up(ctx));
@@ -287,6 +298,10 @@ var getLoc = (function(ctx) {
 (exports.down = down);
 (exports.left = left);
 (exports.right = right);
+(exports.whilst = whilst);
+(exports.recur = recur);
+(exports.seq = seq);
+(exports.any = any);
 (exports.root = root);
 (exports.leftmost = leftmost);
 (exports.rightmost = rightmost);

@@ -1,5 +1,15 @@
 # ChangeLog #
 
+## 1.5.0 - Feb 16, 2014
+* Removed `tree.nthChild` which was not supported to be exported.
+* Improved `tree.sibling` to not reconstruct parent during move.
+* Added `zipper.whilst` to invoke an operation while a predicate holds.
+* Added `zipper.recur` to invoke an operation multiple times until it fails.
+* Added `zipper.seq` to perform 2 or more  move operations in order with correctly
+  handled failure.
+* Added `zipper.any` to perform 2 or more  move operations, getting result from first
+  to succeed.
+
 ## 1.4.2 - Feb 16, 2014
 * Publish from correct branch this time.
 
