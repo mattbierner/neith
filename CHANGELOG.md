@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 1.4.2 - Feb 16, 2014
+* Publish from correct branch this time.
+
 ## 1.4.1 - Feb 16, 2014
 * Only reconstruct dirty nodes.
 
