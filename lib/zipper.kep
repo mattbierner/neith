@@ -86,15 +86,16 @@ Context.prototype.setLoc = \loc =self->
 
 // Loc
 ////////////////////////////////////////
-var Loc = function\focus, parent, path, left, right =self -> {
+var Loc = function\focus, parent, path, left, right, dirty =self -> {
     self.focus = focus;
     self.parent = parent;
     self.path = path;
     self.left = left;
     self.right = right;
+    self.dirty = dirty;
 };
 
-Loc.empty = new Loc(null, null, NIL, NIL, NIL);
+Loc.empty = new Loc(null, null, NIL, NIL, NIL, false);
 
 Loc.prototype.setFocus = \focus =self->
     new Loc(
@@ -102,7 +103,8 @@ Loc.prototype.setFocus = \focus =self->
         self.parent,
         self.path,
         self.left,
-        self.right);
+        self.right,
+        self.dirty);
 
 Loc.prototype.setLeft = \left =self->
     new Loc(
@@ -110,7 +112,8 @@ Loc.prototype.setLeft = \left =self->
         self.parent,
         self.path,
         left,
-        self.right);
+        self.right,
+        self.dirty);
 
 Loc.prototype.setRight = \right =self->
     new Loc(
@@ -118,10 +121,23 @@ Loc.prototype.setRight = \right =self->
         self.parent,
         self.path,
         self.left,
-        right);
+        right,
+        self.dirty);
+    
+Loc.prototype.setDirty = \dirty =self->
+    new Loc(
+        self.focus,
+        self.parent,
+        self.path,
+        self.left,
+        self.right,
+        dirty);
 
 Loc.prototype.setSurround = \left, focus, right =self->
-    self.setFocus(focus).setLeft(left).setRight(right);
+    self
+        .setFocus(focus)
+        .setLeft(left)
+        .setRight(right);
 
 /* Internal operations
  ******************************************************************************/
@@ -132,6 +148,10 @@ var setLoc = \ctx, loc -> ctx.setLoc(loc);
 var modifyLoc = \ctx, f -> setLoc(ctx, f(getLoc(ctx)));
 
 var setFocus = \ctx, f -> modifyLoc(ctx, \loc -> loc.setFocus(f));
+
+var dirty = \ctx -> getLoc(ctx).dirty;
+
+var markDirty = \ctx -> ctx.setLoc(ctx.loc.setDirty(true));
 
 var getPath = \ctx -> getLoc(ctx).path;
 
@@ -148,9 +168,9 @@ var constructParent = \ctx ->
     construct(ctx,
         parent(ctx).focus,
         append(
-            reverse(lefts(ctx)),
-            cons(extract(ctx), NIL),
-            rights(ctx)));
+            reverse <| lefts ctx,
+            cons(extract ctx, NIL),
+            rights ctx));
 
 /* Queries
  ******************************************************************************/
@@ -245,7 +265,11 @@ up = \ctx ->
     ?isRoot ctx
         :null
         :setLoc(ctx,
-            parent(ctx).setFocus(constructParent(ctx)));
+            ?dirty ctx
+                :parent(ctx)
+                    .setFocus(constructParent(ctx))
+                    .setDirty(true)
+                :parent(ctx));
 
 /**
  * Move downwards to the leftmost child of the focus.
@@ -255,14 +279,15 @@ up = \ctx ->
 down = \ctx ->
     ?isLeaf ctx
         :null
-        :setLoc(ctx,
-            let cs = children(ctx) in
+        :let cs = children(ctx) in
+            setLoc(ctx,
                 new Loc(
-                    first(cs),
+                    first cs,
                     getLoc(ctx),
-                    pushPath(extract(ctx), ctx),
+                    pushPath(extract ctx, ctx),
                     NIL,
-                    rest(cs)));
+                    rest cs,
+                    false));
 
 /**
  * Move left to the next left sibling of the focus.
@@ -272,12 +297,12 @@ down = \ctx ->
 left = \ctx ->
     ?isFirst ctx
         :null
-        :setLoc(ctx,
-            let ls = lefts(ctx) in
+        :let ls = lefts(ctx) in
+            setLoc(ctx,
                 getLoc(ctx).setSurround(
-                    rest(ls),
-                    first(ls),
-                    cons(extract(ctx), rights(ctx))));
+                    rest ls,
+                    first ls,
+                    cons(extract ctx, rights ctx)));
 
 /**
  * Move right to the next right sibling of the focus.
@@ -287,12 +312,12 @@ left = \ctx ->
 right = \ctx ->
     ?isLast ctx
         :null
-        :setLoc(ctx,
-            let rs = rights(ctx) in
+        :let rs = rights(ctx) in
+            setLoc(ctx,
                 getLoc(ctx).setSurround(
-                    cons(extract(ctx), lefts(ctx)),
-                    first(rs),
-                    rest(rs)));
+                    cons(extract ctx, lefts ctx),
+                    first rs,
+                    rest rs));
 
 /* Compound Movement
  ******************************************************************************/
@@ -385,14 +410,14 @@ prevDfs = \ctx ->
  * @param node Replacement.
  * @param ctx
  */
-replace = flip setFocus;
+replace = flip setFocus \>> markDirty;
 
 /**
  * Modify focus with function `f` and replace it with result.
  */
 modify = \f, ctx ->
     replace(
-        f(extract(ctx)),
+        f(extract ctx),
         ctx);
 
 /**
@@ -418,8 +443,8 @@ remove = \ctx ->
  *   the one next to the focus.
  * @param ctx
  */
-setLefts = \ls, ctx ->
-    modifyLoc(ctx, \loc -> loc.setLeft(ls));
+setLefts =\ls, ctx ->
+    modifyLoc(ctx, \loc -> loc.setLeft(ls).setDirty(true));
 
 /**
  * Modify the current lefts of the focus.
@@ -437,7 +462,7 @@ modifyLefts = \f, ctx ->
  * @param ctx
  */
 setRights = \rs, ctx ->
-    modifyLoc(ctx, \loc -> loc.setRight(rs));
+    modifyLoc(ctx, \loc -> loc.setRight(rs).setDirty(true));
 
 /**
  * Modify the rights lefts of the focus.
@@ -470,7 +495,7 @@ insertChild = \node, ctx ->
             |> insertLeft@node
             |> up)
         :replace(
-            construct(ctx, extract(ctx), cons(node, NIL)),
+            construct(ctx, extract ctx, cons(node, NIL)),
             ctx);
 
 /**

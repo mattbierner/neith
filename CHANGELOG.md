@@ -1,6 +1,9 @@
 # ChangeLog #
 
-## 1.4.0 - January 24, 2014
+## 1.4.1 - Feb 16, 2014
+* Only reconstruct dirty nodes.
+
+## 1.4.0 - Feb 15, 2014
 * Added `zipper.detach` to make current node the root.
 * Added `zipper::walk` module for traversing trees with editing and removal.
 

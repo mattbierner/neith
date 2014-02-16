@@ -15,7 +15,8 @@ var zipper = require("./zipper"),
         return x;
     }),
     merge = (function(ctx, o) {
-        return (o ? ctx.setLoc(ctx.loc.setFocus((o && o.loc.focus))) : o);
+        return (o ? ctx.setLoc(ctx.loc.setFocus((o && o.loc.focus))
+            .setDirty(o.loc.dirty)) : o);
     }),
     impl = (function(pre, post, ctx) {
         var t = pre(ctx);

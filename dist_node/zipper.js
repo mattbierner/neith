@@ -32,26 +32,31 @@ var __o = require("nu-stream")["stream"],
     var self = this;
     return new(Context)(loc, self.children, self.constructNode);
 }));
-var Loc = (function(focus, parent, path, left, right) {
+var Loc = (function(focus, parent, path, left, right, dirty) {
     var self = this;
     (self.focus = focus);
     (self.parent = parent);
     (self.path = path);
     (self.left = left);
     (self.right = right);
+    (self.dirty = dirty);
 });
-(Loc.empty = new(Loc)(null, null, NIL, NIL, NIL));
+(Loc.empty = new(Loc)(null, null, NIL, NIL, NIL, false));
 (Loc.prototype.setFocus = (function(focus) {
     var self = this;
-    return new(Loc)(focus, self.parent, self.path, self.left, self.right);
+    return new(Loc)(focus, self.parent, self.path, self.left, self.right, self.dirty);
 }));
 (Loc.prototype.setLeft = (function(left) {
     var self = this;
-    return new(Loc)(self.focus, self.parent, self.path, left, self.right);
+    return new(Loc)(self.focus, self.parent, self.path, left, self.right, self.dirty);
 }));
 (Loc.prototype.setRight = (function(right) {
     var self = this;
-    return new(Loc)(self.focus, self.parent, self.path, self.left, right);
+    return new(Loc)(self.focus, self.parent, self.path, self.left, right, self.dirty);
+}));
+(Loc.prototype.setDirty = (function(dirty) {
+    var self = this;
+    return new(Loc)(self.focus, self.parent, self.path, self.left, self.right, dirty);
 }));
 (Loc.prototype.setSurround = (function(left, focus, right) {
     var self = this;
@@ -72,6 +77,13 @@ var getLoc = (function(ctx) {
         return modifyLoc(ctx, (function(loc) {
             return loc.setFocus(f);
         }));
+    }),
+    dirty = (function(ctx) {
+        return getLoc(ctx)
+            .dirty;
+    }),
+    markDirty = (function(ctx) {
+        return ctx.setLoc(ctx.loc.setDirty(true));
     }),
     getPath = (function(ctx) {
         return getLoc(ctx)
@@ -154,28 +166,30 @@ var getLoc = (function(ctx) {
     });
 })(isEmpty, rights));
 (up = (function(ctx) {
-    return (isRoot(ctx) ? null : setLoc(ctx, parent(ctx)
-        .setFocus(constructParent(ctx))));
+    return (isRoot(ctx) ? null : setLoc(ctx, (dirty(ctx) ? parent(ctx)
+        .setFocus(constructParent(ctx))
+        .setDirty(true) : parent(ctx))));
 }));
 (down = (function(ctx) {
-    return (isLeaf(ctx) ? null : setLoc(ctx, (function() {
+    return (isLeaf(ctx) ? null : (function() {
         var cs = children(ctx);
-        return new(Loc)(first(cs), getLoc(ctx), pushPath(extract(ctx), ctx), NIL, rest(cs));
-    })()));
+        return setLoc(ctx, new(Loc)(first(cs), getLoc(ctx), pushPath(extract(ctx), ctx), NIL, rest(cs),
+            false));
+    })());
 }));
 (left = (function(ctx) {
-    return (isFirst(ctx) ? null : setLoc(ctx, (function() {
+    return (isFirst(ctx) ? null : (function() {
         var ls = lefts(ctx);
-        return getLoc(ctx)
-            .setSurround(rest(ls), first(ls), cons(extract(ctx), rights(ctx)));
-    })()));
+        return setLoc(ctx, getLoc(ctx)
+            .setSurround(rest(ls), first(ls), cons(extract(ctx), rights(ctx))));
+    })());
 }));
 (right = (function(ctx) {
-    return (isLast(ctx) ? null : setLoc(ctx, (function() {
+    return (isLast(ctx) ? null : (function() {
         var rs = rights(ctx);
-        return getLoc(ctx)
-            .setSurround(cons(extract(ctx), lefts(ctx)), first(rs), rest(rs));
-    })()));
+        return setLoc(ctx, getLoc(ctx)
+            .setSurround(cons(extract(ctx), lefts(ctx)), first(rs), rest(rs)));
+    })());
 }));
 (root = (function(ctx) {
     var parent = up(ctx);
@@ -208,7 +222,11 @@ var getLoc = (function(ctx) {
     var l = left(ctx);
     return (l ? rightLeaf(l) : up(ctx));
 }));
-(replace = flip(setFocus));
+(replace = (function(f, g) {
+    return (function() {
+        return f(g.apply(null, arguments));
+    });
+})(markDirty, flip(setFocus)));
 (modify = (function(f, ctx) {
     return replace(f(extract(ctx)), ctx);
 }));
@@ -218,7 +236,8 @@ var getLoc = (function(ctx) {
 }));
 (setLefts = (function(ls, ctx) {
     return modifyLoc(ctx, (function(loc) {
-        return loc.setLeft(ls);
+        return loc.setLeft(ls)
+            .setDirty(true);
     }));
 }));
 (modifyLefts = (function(f, ctx) {
@@ -226,7 +245,8 @@ var getLoc = (function(ctx) {
 }));
 (setRights = (function(rs, ctx) {
     return modifyLoc(ctx, (function(loc) {
-        return loc.setRight(rs);
+        return loc.setRight(rs)
+            .setDirty(true);
     }));
 }));
 (modifyRights = (function(f, ctx) {

@@ -20,9 +20,8 @@ var id = \x -> x;
 
 var merge = \ctx o ->
     ?o
-        :ctx.setLoc(ctx.loc.setFocus(o && o.loc.focus))
+        :ctx.setLoc(ctx.loc.setFocus(o && o.loc.focus).setDirty(o.loc.dirty))
         :o;
-
 
 /**
  * Visit all descendants in dep in depth first order.
