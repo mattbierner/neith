@@ -1,5 +1,9 @@
 # ChangeLog #
 
+## 1.5.1 - Feb 26, 2014
+* Performance improvements.
+* Down only calls `children` once.
+
 ## 1.5.0 - Feb 16, 2014
 * Removed `tree.nthChild` which was not supported to be exported.
 * Improved `tree.sibling` to not reconstruct parent during move.

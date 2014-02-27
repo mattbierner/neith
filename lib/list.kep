@@ -32,7 +32,7 @@ listZipper = let
     children = \s -> ?isStream(s) :s :NIL,
     construct = \_ children -> children
 in
-    (zipper,
+    zipper@(
         children,
         construct);
 
@@ -49,8 +49,8 @@ in
  */
 listZipperIn = \lefts, focus, rights ->
     listZipper(focus)
-        |> (setLefts, lefts)
-        |> (setRights, rights);
+        |> setLefts@lefts
+        |> setRights@rights;
 
 /**
  * Create a zipper for an array.
@@ -63,7 +63,7 @@ arrayZipper = let
     children = \s -> ?Array.isArray(s) :from(s) :NIL,
     construct = \_ children -> toArray(children)
 in
-    (zipper,
+    zipper@(
         children,
         construct);
 

@@ -64,14 +64,14 @@ var zipper = require("./zipper"),
     return (c ? node(c) : null);
 }));
 var findEdge = (function(e, op, ctx) {
+    var x;
     return zipper.whilst((function(f, g) {
         return (function(x) {
             return f(g(x));
         });
-    })((function(x, y) {
-            return (x !== y);
-        })
-        .bind(null, e), edge), op, ctx);
+    })(((x = e), (function(y) {
+        return (x !== y);
+    })), edge), op, ctx);
 });
 (sibling = (function(e, ctx) {
     return (findEdge(e, left, ctx) || findEdge(e, right, right(ctx)));

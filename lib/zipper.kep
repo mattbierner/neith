@@ -284,18 +284,19 @@ up = \ctx ->
  * 
  * Returns null if the focus has no children.
  */
-down = \ctx ->
-    ?isLeaf ctx
+down = \ctx -> let
+    cs = children ctx
+in
+    ?isEmpty cs
         :null
-        :let cs = children ctx in
-            setLoc(ctx,
-                new Loc(
-                    first cs,
-                    getLoc(ctx),
-                    pushPath(extract ctx, ctx),
-                    NIL,
-                    rest cs,
-                    false));
+        :setLoc(ctx,
+            new Loc(
+                first cs,
+                getLoc(ctx),
+                pushPath(extract ctx, ctx),
+                NIL,
+                rest cs,
+                false));
 
 /**
  * Move left to the next left sibling of the focus.
@@ -528,10 +529,10 @@ insertRight = \node, ctx ->
  */
 insertChild = \node, ctx ->
     ?hasChildren ctx
-        :(ctx
+        :ctx
             |> down
             |> insertLeft@node
-            |> up)
+            |> up
         :replace(
             construct(ctx, extract ctx, cons(node, NIL)),
             ctx);
@@ -541,11 +542,11 @@ insertChild = \node, ctx ->
  */
 appendChild = \node, ctx ->
     ?hasChildren ctx
-        :(ctx
+        :ctx
             |> down
             |> rightmost
             |> insertRight@node
-            |> up)
+            |> up
         :insertChild(node, ctx);
 
 /* Context editing

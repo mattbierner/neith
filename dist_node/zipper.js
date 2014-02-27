@@ -17,7 +17,7 @@ var __o = require("nu-stream")["stream"],
     path, lefts, rights, children, parent, hasChildren, hasParent, isRoot, isChild, isLeaf, isFirst, isLast, up, down,
         left, right, whilst, recur, seq, any, root, leftmost, rightmost, leftLeaf, rightLeaf, nextUpDfs, nextDfs,
         prevDfs, extract, replace, modify, remove, setLefts, modifyLefts, setRights, modifyRights, insertLeft,
-        insertRight, insertChild, appendChild, detach, zipper, reduceRight = Function.prototype.call.bind(Array.prototype
+        insertRight, insertChild, appendChild, detach, zipper, x, reduceRight = Function.prototype.call.bind(Array.prototype
             .reduceRight),
     flip = (function(f) {
         return (function(x, y) {
@@ -138,10 +138,9 @@ var getLoc = (function(ctx) {
     return (function(x) {
         return f(g(x));
     });
-})((function(x, y) {
-        return (x !== y);
-    })
-    .bind(null, null), parent));
+})(((x = null), (function(y) {
+    return (x !== y);
+})), parent));
 (isRoot = (function(f, g) {
     return (function(x) {
         return f(g(x));
@@ -173,25 +172,19 @@ var getLoc = (function(ctx) {
         .setDirty(true) : parent(ctx))));
 }));
 (down = (function(ctx) {
-    return (isLeaf(ctx) ? null : (function() {
-        var cs = children(ctx);
-        return setLoc(ctx, new(Loc)(first(cs), getLoc(ctx), pushPath(extract(ctx), ctx), NIL, rest(cs),
-            false));
-    })());
+    var cs = children(ctx);
+    return (isEmpty(cs) ? null : setLoc(ctx, new(Loc)(first(cs), getLoc(ctx), pushPath(extract(ctx), ctx), NIL,
+        rest(cs), false)));
 }));
 (left = (function(ctx) {
-    return (isFirst(ctx) ? null : (function() {
-        var ls = lefts(ctx);
-        return setLoc(ctx, getLoc(ctx)
-            .setSurround(rest(ls), first(ls), cons(extract(ctx), rights(ctx))));
-    })());
+    var ls;
+    return (isFirst(ctx) ? null : ((ls = lefts(ctx)), setLoc(ctx, getLoc(ctx)
+        .setSurround(rest(ls), first(ls), cons(extract(ctx), rights(ctx))))));
 }));
 (right = (function(ctx) {
-    return (isLast(ctx) ? null : (function() {
-        var rs = rights(ctx);
-        return setLoc(ctx, getLoc(ctx)
-            .setSurround(cons(extract(ctx), lefts(ctx)), first(rs), rest(rs)));
-    })());
+    var rs;
+    return (isLast(ctx) ? null : ((rs = rights(ctx)), setLoc(ctx, getLoc(ctx)
+        .setSurround(cons(extract(ctx), lefts(ctx)), first(rs), rest(rs)))));
 }));
 (whilst = (function(pred, op, ctx) {
     return ((ctx && pred(ctx)) ? whilst(pred, op, op(ctx)) : ctx);
