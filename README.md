@@ -24,7 +24,7 @@ with
     import 'nu::stream' stream
 in {
 
-/// Definite a new zipper type for json type objects.
+/// Define a new zipper type for json type objects.
 var objZipper = tree.treeZipper @ (
     Object.keys \> stream.from,
     (.)
