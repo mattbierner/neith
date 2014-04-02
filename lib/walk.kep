@@ -2,59 +2,51 @@
  * @fileOverview Walking operations 
  */
 package (
+    forChildren
+    
     walk
     postWalk
     preWalk)
 with
     import './zipper' zipper#{
         isLeaf
-        isLast
-        isRoot
-        detach
         up
         down
-        right}
+        right
+        seq
+        whilst}
 in {
 
 var id = \x -> x;
 
-var merge = \ctx o ->
-    ?o
-        :ctx.setLoc(ctx.loc.setFocus(o && o.loc.focus).setDirty(o.loc.dirty))
-        :o;
+/**
+ * Visit all children of the current context with function `f`.
+ * 
+ * @param f Zipper operation called on each child, left to right.
+ * @param ctx
+ */
+forChildren = \f ctx ->
+    ?!ctx || isLeaf ctx
+        :ctx
+        :ctx
+            |> down
+            |> whilst @ (right, seq(f, right))
+            |> f
+            |> up;
 
 /**
- * Visit all descendants in dep in depth first order.
- * 
- * The zipper operations may not traverse out of the walk root.
+ * Visit all descendants in depth first order.
  * 
  * @param pre Zipper operation called before visiting descendants. This may 
  *   edit the node to change the descendants that will be visited.
  * @param post Zipper operation called after all of a node's descendants have
- *   been visited. The walk is resumed from wherever post moves to.
- *   
+ *   been visited.
  */
-walk = let
-    impl = \pre post ctx -> {
-        var t = pre(ctx);
-        
-        if (isLeaf t) {
-            do {
-                t = post(t);
-                if (isLast t) {
-                    if (isRoot t)
-                        return t;
-                    t = up t;
-                } else {
-                    return impl(pre, post, right t);
-                }
-            } while (true);
-        }
-        return impl(pre, post, down t);
-    }
+walk = \pre post ctx -> let
+    walkImpl := \ctx -> 
+        post <| forChildren(walkImpl, pre ctx)
 in
-    \pre post ctx ->
-        merge(ctx, impl(pre, post, detach ctx));
+    walkImpl(ctx);
 
 /**
  * Post, depth first traversal of zipper.

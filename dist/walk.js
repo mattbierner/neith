@@ -1,41 +1,25 @@
 /*
  * THIS FILE IS AUTO GENERATED from 'lib/walk.kep'
  * DO NOT EDIT
-*/
-define(["require", "exports", "./zipper"], (function(require, exports, zipper) {
+*/define(["require", "exports", "./zipper"], (function(require, exports, zipper) {
     "use strict";
     var isLeaf = zipper["isLeaf"],
-        isLast = zipper["isLast"],
-        isRoot = zipper["isRoot"],
-        detach = zipper["detach"],
         up = zipper["up"],
         down = zipper["down"],
         right = zipper["right"],
-        walk, postWalk, preWalk, id = (function(x) {
+        seq = zipper["seq"],
+        whilst = zipper["whilst"],
+        forChildren, walk, postWalk, preWalk, id = (function(x) {
             return x;
-        }),
-        merge = (function(ctx, o) {
-            return (o ? ctx.setLoc(ctx.loc.setFocus((o && o.loc.focus))
-                .setDirty(o.loc.dirty)) : o);
-        }),
-        impl = (function(pre, post, ctx) {
-            var t = pre(ctx);
-            if (isLeaf(t)) {
-                do {
-                    (t = post(t));
-                    if (isLast(t)) {
-                        if (isRoot(t)) return t;
-                        (t = up(t));
-                    } else {
-                        return impl(pre, post, right(t));
-                    }
-                }
-                while (true);
-            }
-            return impl(pre, post, down(t));
         });
+    (forChildren = (function(f, ctx) {
+        return (((!ctx) || isLeaf(ctx)) ? ctx : up(f(whilst(right, seq(f, right), down(ctx)))));
+    }));
     (walk = (function(pre, post, ctx) {
-        return merge(ctx, impl(pre, post, detach(ctx)));
+        var walkImpl = (function(ctx) {
+            return post(forChildren(walkImpl, pre(ctx)));
+        });
+        return walkImpl(ctx);
     }));
     (postWalk = (function(post, ctx) {
         return walk(id, post, ctx);
@@ -43,7 +27,8 @@ define(["require", "exports", "./zipper"], (function(require, exports, zipper) {
     (preWalk = (function(pre, ctx) {
         return walk(pre, id, ctx);
     }));
-    (exports.walk = walk);
-    (exports.postWalk = postWalk);
-    (exports.preWalk = preWalk);
+    (exports["forChildren"] = forChildren);
+    (exports["walk"] = walk);
+    (exports["postWalk"] = postWalk);
+    (exports["preWalk"] = preWalk);
 }));

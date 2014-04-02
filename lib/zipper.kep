@@ -2,14 +2,13 @@
  * @fileOverview Core zipper data structure and generic operations.
  */
 package (
-// State
+// Node Queries
+    extract
+    children
+    parent
     path
     lefts
     rights
-
-// Node Queries
-    children
-    parent
 
 // Node Predicates
     hasChildren
@@ -44,7 +43,6 @@ package (
     prevDfs
     
 // Editing
-    extract
     replace
     modify
     remove
@@ -58,6 +56,7 @@ package (
     appendChild
 
     detach
+    
 // Zipper Creation
     zipper)
 with
@@ -68,7 +67,6 @@ with
         rest
         isEmpty
         NIL
-        foldl
         reverse},
     import 'nu-stream::select' {
         skip}
@@ -76,7 +74,7 @@ in {
 
 var reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight);
 
-var flip = \f -> \x y -> f(y, x);
+var flip := \f -> \x y -> f(y, x);
 
 // Context
 ////////////////////////////////////////
@@ -142,10 +140,13 @@ Loc.prototype.setDirty = \dirty =self->
         dirty);
 
 Loc.prototype.setSurround = \left, focus, right =self->
-    self
-        .setFocus(focus)
-        .setLeft(left)
-        .setRight(right);
+    new Loc(
+        focus,
+        self.parent,
+        self.path,
+        left,
+        right,
+        self.dirty);
 
 /* Internal operations
  ******************************************************************************/
@@ -163,7 +164,7 @@ var markDirty = \ctx -> ctx.setLoc(ctx.loc.setDirty(true));
 
 var getPath = \ctx -> getLoc(ctx).path;
 
-var pushPath = \x, ctx -> cons(x, getPath(ctx));
+var pushPath = \x ctx -> cons(x, getPath(ctx));
 
 /* Reconstruction
  ******************************************************************************/
@@ -230,12 +231,12 @@ parent = \ctx -> getLoc(ctx).parent;
 /**
  * Does the focus have any children?
  */
-hasChildren = children \> (!) <\ isEmpty;
+hasChildren = (!) <\ isEmpty <\ children;
 
 /**
  * Does the focus have a parent?
  */
-hasParent = parent \> (!==)@null;
+hasParent = parent \> (!==, null);
 
 /**
  * Is the focus a root node?
@@ -280,7 +281,7 @@ up = \ctx ->
                 :parent(ctx));
 
 /**
- * Move downwards to the leftmost child of the focus.
+ * Move to the leftmost child of the focus.
  * 
  * Returns null if the focus has no children.
  */
@@ -299,7 +300,7 @@ in
                 false));
 
 /**
- * Move left to the next left sibling of the focus.
+ * Move to the left sibling of the focus.
  * 
  * Returns null if there are no left siblings.
  */
@@ -314,7 +315,7 @@ left = \ctx ->
                     cons(extract ctx, rights ctx)));
 
 /**
- * Move right to the next right sibling of the focus.
+ * Move to the right sibling of the focus.
  * 
  * Returns null if there are no right siblings.
  */
@@ -334,7 +335,7 @@ right = \ctx ->
  * Run `op` while `pred` holds true, returning the last result.
  * 
  * @param pred Predicate operation taking current context.
- * @param op Movement operation that updates the context..
+ * @param op Movement operation that updates the context.
  * @param ctx
  */
 whilst = \pred op ctx ->
@@ -362,10 +363,10 @@ recur = \op ctx ->
 seq = let
     and = \p, c ->
         \ctx ->
-            let next = c ctx in
-                ?next
-                    :p(next)
-                    :next
+            ?ctx
+                :let next = c ctx in
+                    (next && p next)
+                :ctx
 in
     \ops(...) ->
         reduceRight(ops, and);
@@ -376,7 +377,9 @@ in
  * Takes list of operations as arguments.
  */
 any = let
-    or = \p, c -> \ctx -> c ctx || p ctx
+    or = \p c ->
+        \ctx ->
+            ctx && (c ctx || p ctx)
 in
     \ops(...) ->
         reduceRight(ops, or);
@@ -462,7 +465,7 @@ modify = \f, ctx ->
 /**
  * Removes the focus.
  * 
- * Moves to either the first right sibiling, or the left sibiling, or the parent.
+ * Moves to either the first right sibling, or the left sibling, or the parent.
  * 
  * Returns null if the focus has no parent.
  */

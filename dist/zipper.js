@@ -1,8 +1,7 @@
 /*
  * THIS FILE IS AUTO GENERATED from 'lib/zipper.kep'
  * DO NOT EDIT
-*/
-define(["require", "exports", "nu-stream/stream", "nu-stream/select"], (function(require, exports, __o, __o0) {
+*/define(["require", "exports", "nu-stream/stream", "nu-stream/select"], (function(require, exports, __o, __o0) {
     "use strict";
     var append = __o["append"],
         cons = __o["cons"],
@@ -10,14 +9,13 @@ define(["require", "exports", "nu-stream/stream", "nu-stream/select"], (function
         rest = __o["rest"],
         isEmpty = __o["isEmpty"],
         NIL = __o["NIL"],
-        foldl = __o["foldl"],
         reverse = __o["reverse"],
         skip = __o0["skip"],
-        path, lefts, rights, children, parent, hasChildren, hasParent, isRoot, isChild, isLeaf, isFirst, isLast,
-            up, down, left, right, whilst, recur, seq, any, root, leftmost, rightmost, leftLeaf, rightLeaf,
-            nextUpDfs, nextDfs, prevDfs, extract, replace, modify, remove, setLefts, modifyLefts, setRights,
-            modifyRights, insertLeft, insertRight, insertChild, appendChild, detach, zipper, x, reduceRight =
-            Function.prototype.call.bind(Array.prototype.reduceRight),
+        extract, children, parent, path, lefts, rights, hasChildren, hasParent, isRoot, isChild, isLeaf,
+            isFirst, isLast, up, down, left, right, whilst, recur, seq, any, root, leftmost, rightmost,
+            leftLeaf, rightLeaf, nextUpDfs, nextDfs, prevDfs, replace, modify, remove, setLefts, modifyLefts,
+            setRights, modifyRights, insertLeft, insertRight, insertChild, appendChild, detach, zipper, x,
+            reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight),
         flip = (function(f) {
             return (function(x, y) {
                 return f(y, x);
@@ -61,9 +59,7 @@ define(["require", "exports", "nu-stream/stream", "nu-stream/select"], (function
     }));
     (Loc.prototype.setSurround = (function(left, focus, right) {
         var self = this;
-        return self.setFocus(focus)
-            .setLeft(left)
-            .setRight(right);
+        return new(Loc)(focus, self.parent, self.path, left, right, self.dirty);
     }));
     var getLoc = (function(ctx) {
         return ctx.loc;
@@ -194,8 +190,8 @@ define(["require", "exports", "nu-stream/stream", "nu-stream/select"], (function
     }));
     var and = (function(p, c) {
         return (function(ctx) {
-            var next = c(ctx);
-            return (next ? p(next) : next);
+            var next;
+            return (ctx ? ((next = c(ctx)), (next && p(next))) : ctx);
         });
     });
     (seq = (function() {
@@ -204,7 +200,7 @@ define(["require", "exports", "nu-stream/stream", "nu-stream/select"], (function
     }));
     var or = (function(p, c) {
         return (function(ctx) {
-            return (c(ctx) || p(ctx));
+            return (ctx && (c(ctx) || p(ctx)));
         });
     });
     (any = (function() {
@@ -274,46 +270,46 @@ define(["require", "exports", "nu-stream/stream", "nu-stream/select"], (function
     (zipper = (function(children, constructNode, focus) {
         return new(Context)(Loc.empty.setFocus(focus), children, constructNode);
     }));
-    (exports.path = path);
-    (exports.lefts = lefts);
-    (exports.rights = rights);
-    (exports.children = children);
-    (exports.parent = parent);
-    (exports.hasChildren = hasChildren);
-    (exports.hasParent = hasParent);
-    (exports.isRoot = isRoot);
-    (exports.isChild = isChild);
-    (exports.isLeaf = isLeaf);
-    (exports.isFirst = isFirst);
-    (exports.isLast = isLast);
-    (exports.up = up);
-    (exports.down = down);
-    (exports.left = left);
-    (exports.right = right);
-    (exports.whilst = whilst);
-    (exports.recur = recur);
-    (exports.seq = seq);
-    (exports.any = any);
-    (exports.root = root);
-    (exports.leftmost = leftmost);
-    (exports.rightmost = rightmost);
-    (exports.leftLeaf = leftLeaf);
-    (exports.rightLeaf = rightLeaf);
-    (exports.nextUpDfs = nextUpDfs);
-    (exports.nextDfs = nextDfs);
-    (exports.prevDfs = prevDfs);
-    (exports.extract = extract);
-    (exports.replace = replace);
-    (exports.modify = modify);
-    (exports.remove = remove);
-    (exports.setLefts = setLefts);
-    (exports.modifyLefts = modifyLefts);
-    (exports.setRights = setRights);
-    (exports.modifyRights = modifyRights);
-    (exports.insertLeft = insertLeft);
-    (exports.insertRight = insertRight);
-    (exports.insertChild = insertChild);
-    (exports.appendChild = appendChild);
-    (exports.detach = detach);
-    (exports.zipper = zipper);
+    (exports["extract"] = extract);
+    (exports["children"] = children);
+    (exports["parent"] = parent);
+    (exports["path"] = path);
+    (exports["lefts"] = lefts);
+    (exports["rights"] = rights);
+    (exports["hasChildren"] = hasChildren);
+    (exports["hasParent"] = hasParent);
+    (exports["isRoot"] = isRoot);
+    (exports["isChild"] = isChild);
+    (exports["isLeaf"] = isLeaf);
+    (exports["isFirst"] = isFirst);
+    (exports["isLast"] = isLast);
+    (exports["up"] = up);
+    (exports["down"] = down);
+    (exports["left"] = left);
+    (exports["right"] = right);
+    (exports["whilst"] = whilst);
+    (exports["recur"] = recur);
+    (exports["seq"] = seq);
+    (exports["any"] = any);
+    (exports["root"] = root);
+    (exports["leftmost"] = leftmost);
+    (exports["rightmost"] = rightmost);
+    (exports["leftLeaf"] = leftLeaf);
+    (exports["rightLeaf"] = rightLeaf);
+    (exports["nextUpDfs"] = nextUpDfs);
+    (exports["nextDfs"] = nextDfs);
+    (exports["prevDfs"] = prevDfs);
+    (exports["replace"] = replace);
+    (exports["modify"] = modify);
+    (exports["remove"] = remove);
+    (exports["setLefts"] = setLefts);
+    (exports["modifyLefts"] = modifyLefts);
+    (exports["setRights"] = setRights);
+    (exports["modifyRights"] = modifyRights);
+    (exports["insertLeft"] = insertLeft);
+    (exports["insertRight"] = insertRight);
+    (exports["insertChild"] = insertChild);
+    (exports["appendChild"] = appendChild);
+    (exports["detach"] = detach);
+    (exports["zipper"] = zipper);
 }));

@@ -110,22 +110,5 @@ exports.post_using_previous_edit = function(test) {
     test.done();
 };
 
-exports.walk_remove = function(test) {
-    var z = walk.preWalk(
-        function(x) {
-            return (tree.node(x).value % 3 === 0 ?
-                zipper.remove(x) :
-                x);
-        },
-        nary.zipper(nary1));
-    
-    test.deepEqual(
-        nary.walk(tree.node(z)),
-        [1, 2, 4, 5, 8]);
-    
-    test.done();
-};
-
-
 
 

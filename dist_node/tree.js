@@ -1,8 +1,7 @@
 /*
  * THIS FILE IS AUTO GENERATED from 'lib/tree.kep'
  * DO NOT EDIT
-*/
-"use strict";
+*/"use strict";
 var zipper = require("./zipper"),
     right = zipper["right"],
     left = zipper["left"],
@@ -11,9 +10,7 @@ var zipper = require("./zipper"),
     stream = require("nu-stream")["stream"],
     foldl = stream["foldl"],
     map = stream["map"],
-    __o = require("nu-stream")["select"],
-    skip = __o["skip"],
-    Pair, pairKey, pairValue, edgePath, nodePath, node, edge, childNode, parentNode, childNodes, child, sibling,
+    Pair, pairKey, pairValue, edgePath, nodePath, node, edge, childNode, parentNode, childNodes, edges, child, sibling,
         setNode, modifyNode, setEdge, modifyEdge, insertLeft, insertRight, insertChild, appendChild, treeZipper;
 (Pair = (function(key, value) {
     return ({
@@ -59,9 +56,14 @@ var zipper = require("./zipper"),
         return f(g(x));
     });
 })(map.bind(null, pairValue), zipper.children));
+(edges = (function(f, g) {
+    return (function(x) {
+        return f(g(x));
+    });
+})(map.bind(null, pairKey), zipper.children));
 (childNode = (function(edge, ctx) {
     var c = child(edge, ctx);
-    return (c ? node(c) : null);
+    return (c && node(c));
 }));
 var findEdge = (function(e, op, ctx) {
     var x;
@@ -123,24 +125,25 @@ var reducer = (function(p, __o) {
         });
     return zipper.zipper(children, _constructNode, Pair(null, focus));
 }));
-(exports.Pair = Pair);
-(exports.pairKey = pairKey);
-(exports.pairValue = pairValue);
-(exports.edgePath = edgePath);
-(exports.nodePath = nodePath);
-(exports.node = node);
-(exports.edge = edge);
-(exports.childNode = childNode);
-(exports.parentNode = parentNode);
-(exports.childNodes = childNodes);
-(exports.child = child);
-(exports.sibling = sibling);
-(exports.setNode = setNode);
-(exports.modifyNode = modifyNode);
-(exports.setEdge = setEdge);
-(exports.modifyEdge = modifyEdge);
-(exports.insertLeft = insertLeft);
-(exports.insertRight = insertRight);
-(exports.insertChild = insertChild);
-(exports.appendChild = appendChild);
-(exports.treeZipper = treeZipper);
+(exports["Pair"] = Pair);
+(exports["pairKey"] = pairKey);
+(exports["pairValue"] = pairValue);
+(exports["edgePath"] = edgePath);
+(exports["nodePath"] = nodePath);
+(exports["node"] = node);
+(exports["edge"] = edge);
+(exports["childNode"] = childNode);
+(exports["parentNode"] = parentNode);
+(exports["childNodes"] = childNodes);
+(exports["edges"] = edges);
+(exports["child"] = child);
+(exports["sibling"] = sibling);
+(exports["setNode"] = setNode);
+(exports["modifyNode"] = modifyNode);
+(exports["setEdge"] = setEdge);
+(exports["modifyEdge"] = modifyEdge);
+(exports["insertLeft"] = insertLeft);
+(exports["insertRight"] = insertRight);
+(exports["insertChild"] = insertChild);
+(exports["appendChild"] = appendChild);
+(exports["treeZipper"] = treeZipper);

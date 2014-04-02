@@ -1,5 +1,13 @@
 # ChangeLog #
 
+## 1.6.0 - Feb 26, 2014
+* Added `tree::forChildren` to visit all children.
+* Changed behavior of `walk` to be more predictable. This breaks support for some
+  previous things, like walking and removing nodes, but that was broken before
+  anyways.
+* Added `tree::edges` to get child edges of focus.
+* Improved `any` and `seq` to not crash for null ctx.
+
 ## 1.5.1 - Feb 26, 2014
 * Performance improvements.
 * Down only calls `children` once.

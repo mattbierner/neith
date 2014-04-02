@@ -1,5 +1,5 @@
 /**
- * @fileOverview Zipper operations for generic labeled nary, trees.
+ * @fileOverview Zipper operations for generic labeled k-ary, trees.
  * 
  * Most of these operations redefine the core zipper operations for labeled trees.
  * The core operations can still be used, but since the core has no concept of
@@ -22,7 +22,8 @@ package (
     childNode
     parentNode
     childNodes
-
+    edges
+    
 // Labeled Movement
     child
     sibling
@@ -50,8 +51,7 @@ with
         down},
     import 'nu-stream::stream' stream#{
         foldl
-        map},
-    import 'nu-stream::select' {skip}
+        map}
 in {
 
 /* Pair
@@ -102,13 +102,16 @@ parentNode = zipper.parent \> pairValue;
 childNodes = zipper.children \> map@pairValue;
 
 /**
+ * Get the values of all edges leading from the focus.
+ */
+edges = zipper.children \> map@pairKey;
+
+/**
  * Get the value of a child.
  */
 childNode = \edge ctx ->
     let c = child(edge, ctx) in
-        ?c
-            :node c
-            :null;
+        (c && node c);
 
 /* Labeled Movement
  ******************************************************************************/
@@ -123,7 +126,7 @@ childNode = \edge ctx ->
  */
 sibling = let
     findEdge = \e op ctx ->
-        zipper.whilst(edge \> (!==)@e, op, ctx)
+        zipper.whilst(edge \> (!==, e), op, ctx)
 in
     \e ctx ->
         (findEdge(e, left, ctx) || findEdge(e, right, right ctx));
@@ -145,11 +148,11 @@ child = \edge, ctx ->
  * Use `neith/zipper` operations to modify edge, value pair of nodes.
  ******************************************************************************/
 /**
- * Set the current focus.
+ * Set the current node.
  * 
  * Keeps current edge.
  * 
- * @param node New focus.
+ * @param node New focus node.
  * @param ctx
  */
 setNode = \node, ctx ->
@@ -158,11 +161,11 @@ setNode = \node, ctx ->
         ctx);
 
 /**
- * Modify the current focus
+ * Modify the current node.
  * 
  * Keeps current edge
  * 
- * @param f Function mapping current focus to replacement.
+ * @param f Function mapping current node to replacement.
  * @param ctx
  */
 modifyNode = \f, ctx ->
@@ -171,9 +174,9 @@ modifyNode = \f, ctx ->
         ctx);
 
 /**
- * Set the current focus.
+ * Set the current edge.
  * 
- * Keeps current edge.
+ * Keeps current node.
  * 
  * @param edge New edge leading to focus.
  * @param ctx
@@ -184,11 +187,11 @@ setEdge = \edge, ctx ->
         ctx);
 
 /**
- * Modify the current focus
+ * Modify the current edge.
  * 
- * Keeps current edge
+ * Keeps current node
  * 
- * @param f Function mapping current focus to replacement.
+ * @param f Function mapping current edge to replacement.
  * @param ctx
  */
 modifyEdge = \f, ctx ->

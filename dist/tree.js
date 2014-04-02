@@ -1,9 +1,7 @@
 /*
  * THIS FILE IS AUTO GENERATED from 'lib/tree.kep'
  * DO NOT EDIT
-*/
-define(["require", "exports", "./zipper", "nu-stream/stream", "nu-stream/select"], (function(require, exports, zipper,
-    stream, __o) {
+*/define(["require", "exports", "./zipper", "nu-stream/stream"], (function(require, exports, zipper, stream) {
     "use strict";
     var right = zipper["right"],
         left = zipper["left"],
@@ -11,9 +9,8 @@ define(["require", "exports", "./zipper", "nu-stream/stream", "nu-stream/select"
         down = zipper["down"],
         foldl = stream["foldl"],
         map = stream["map"],
-        skip = __o["skip"],
-        Pair, pairKey, pairValue, edgePath, nodePath, node, edge, childNode, parentNode, childNodes, child,
-            sibling, setNode, modifyNode, setEdge, modifyEdge, insertLeft, insertRight, insertChild,
+        Pair, pairKey, pairValue, edgePath, nodePath, node, edge, childNode, parentNode, childNodes, edges,
+            child, sibling, setNode, modifyNode, setEdge, modifyEdge, insertLeft, insertRight, insertChild,
             appendChild, treeZipper;
     (Pair = (function(key, value) {
         return ({
@@ -59,19 +56,24 @@ define(["require", "exports", "./zipper", "nu-stream/stream", "nu-stream/select"
             return f(g(x));
         });
     })(map.bind(null, pairValue), zipper.children));
+    (edges = (function(f, g) {
+        return (function(x) {
+            return f(g(x));
+        });
+    })(map.bind(null, pairKey), zipper.children));
     (childNode = (function(edge, ctx) {
         var c = child(edge, ctx);
-        return (c ? node(c) : null);
+        return (c && node(c));
     }));
     var findEdge = (function(e, op, ctx) {
+        var x;
         return zipper.whilst((function(f, g) {
             return (function(x) {
                 return f(g(x));
             });
-        })((function(x, y) {
-                return (x !== y);
-            })
-            .bind(null, e), edge), op, ctx);
+        })(((x = e), (function(y) {
+            return (x !== y);
+        })), edge), op, ctx);
     });
     (sibling = (function(e, ctx) {
         return (findEdge(e, left, ctx) || findEdge(e, right, right(ctx)));
@@ -123,25 +125,26 @@ define(["require", "exports", "./zipper", "nu-stream/stream", "nu-stream/select"
             });
         return zipper.zipper(children, _constructNode, Pair(null, focus));
     }));
-    (exports.Pair = Pair);
-    (exports.pairKey = pairKey);
-    (exports.pairValue = pairValue);
-    (exports.edgePath = edgePath);
-    (exports.nodePath = nodePath);
-    (exports.node = node);
-    (exports.edge = edge);
-    (exports.childNode = childNode);
-    (exports.parentNode = parentNode);
-    (exports.childNodes = childNodes);
-    (exports.child = child);
-    (exports.sibling = sibling);
-    (exports.setNode = setNode);
-    (exports.modifyNode = modifyNode);
-    (exports.setEdge = setEdge);
-    (exports.modifyEdge = modifyEdge);
-    (exports.insertLeft = insertLeft);
-    (exports.insertRight = insertRight);
-    (exports.insertChild = insertChild);
-    (exports.appendChild = appendChild);
-    (exports.treeZipper = treeZipper);
+    (exports["Pair"] = Pair);
+    (exports["pairKey"] = pairKey);
+    (exports["pairValue"] = pairValue);
+    (exports["edgePath"] = edgePath);
+    (exports["nodePath"] = nodePath);
+    (exports["node"] = node);
+    (exports["edge"] = edge);
+    (exports["childNode"] = childNode);
+    (exports["parentNode"] = parentNode);
+    (exports["childNodes"] = childNodes);
+    (exports["edges"] = edges);
+    (exports["child"] = child);
+    (exports["sibling"] = sibling);
+    (exports["setNode"] = setNode);
+    (exports["modifyNode"] = modifyNode);
+    (exports["setEdge"] = setEdge);
+    (exports["modifyEdge"] = modifyEdge);
+    (exports["insertLeft"] = insertLeft);
+    (exports["insertRight"] = insertRight);
+    (exports["insertChild"] = insertChild);
+    (exports["appendChild"] = appendChild);
+    (exports["treeZipper"] = treeZipper);
 }));
