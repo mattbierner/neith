@@ -2,23 +2,21 @@
  * THIS FILE IS AUTO GENERATED FROM 'lib/zipper.kep'
  * DO NOT EDIT
 */
-define(["require", "exports"], (function(require, exports) {
+define(["require", "exports", "nu-stream/stream", "nu-stream/select"], (function(require, exports, __o, __o0) {
     "use strict";
-    var extract, children, parent, path, lefts, rights, hasChildren, hasParent, isRoot, isChild, isLeaf,
-            isFirst, isLast, up, down, left, right, whilst, recur, seq, any, root, leftmost, rightmost,
-            leftLeaf, rightLeaf, nextUpDfs, nextDfs, prevDfs, replace, modify, remove, setLefts, modifyLefts,
-            setRights, modifyRights, insertLeft, insertRight, insertChild, appendChild, detach, zipper, __o =
-            require("nu-stream/stream"),
-        append = __o["append"],
+    var append = __o["append"],
         cons = __o["cons"],
         first = __o["first"],
         rest = __o["rest"],
         isEmpty = __o["isEmpty"],
         NIL = __o["NIL"],
         reverse = __o["reverse"],
-        __o0 = require("nu-stream/select"),
         skip = __o0["skip"],
-        reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight),
+        extract, children, parent, path, lefts, rights, hasChildren, hasParent, isRoot, isChild, isLeaf,
+            isFirst, isLast, up, down, left, right, whilst, recur, seq, any, root, leftmost, rightmost,
+            leftLeaf, rightLeaf, nextUpDfs, nextDfs, prevDfs, replace, modify, remove, setLefts, modifyLefts,
+            setRights, modifyRights, insertLeft, insertRight, insertChild, appendChild, detach, zipper,
+            reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight),
         Context = (function(loc, children, constructNode) {
             var self = this;
             (self.loc = loc);

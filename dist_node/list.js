@@ -3,7 +3,7 @@
  * DO NOT EDIT
 */
 "use strict";
-var listZipper, listZipperIn, arrayZipper, __o = require("nu-stream")["stream"],
+var __o = require("nu-stream")["stream"],
     isStream = __o["isStream"],
     from = __o["from"],
     map = __o["map"],
@@ -13,7 +13,7 @@ var listZipper, listZipperIn, arrayZipper, __o = require("nu-stream")["stream"],
     zipper = __o0["zipper"],
     setLefts = __o0["setLefts"],
     setRights = __o0["setRights"],
-    children = (function(s) {
+    listZipper, listZipperIn, arrayZipper, children = (function(s) {
         return (isStream(s) ? s : NIL);
     }),
     construct = (function(_, children0) {

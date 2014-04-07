@@ -2,19 +2,17 @@
  * THIS FILE IS AUTO GENERATED FROM 'lib/list.kep'
  * DO NOT EDIT
 */
-define(["require", "exports"], (function(require, exports) {
+define(["require", "exports", "nu-stream/stream", "./zipper"], (function(require, exports, __o, __o0) {
     "use strict";
-    var listZipper, listZipperIn, arrayZipper, __o = require("nu-stream/stream"),
-        isStream = __o["isStream"],
+    var isStream = __o["isStream"],
         from = __o["from"],
         map = __o["map"],
         toArray = __o["toArray"],
         NIL = __o["NIL"],
-        __o0 = require("./zipper"),
         zipper = __o0["zipper"],
         setLefts = __o0["setLefts"],
         setRights = __o0["setRights"],
-        children = (function(s) {
+        listZipper, listZipperIn, arrayZipper, children = (function(s) {
             return (isStream(s) ? s : NIL);
         }),
         construct = (function(_, children0) {

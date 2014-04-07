@@ -3,14 +3,14 @@
  * DO NOT EDIT
 */
 "use strict";
-var forChildren, walk, postWalk, preWalk, zipper = require("./zipper"),
+var zipper = require("./zipper"),
     isLeaf = zipper["isLeaf"],
     up = zipper["up"],
     down = zipper["down"],
     right = zipper["right"],
     seq = zipper["seq"],
     whilst = zipper["whilst"],
-    id = (function(x) {
+    forChildren, walk, postWalk, preWalk, id = (function(x) {
         return x;
     });
 (forChildren = (function(f, ctx) {

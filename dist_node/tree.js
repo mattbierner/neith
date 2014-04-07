@@ -3,16 +3,16 @@
  * DO NOT EDIT
 */
 "use strict";
-var Pair, pairKey, pairValue, edgePath, nodePath, node, edge, childNode, parentNode, childNodes, edges, child, sibling,
-        setNode, modifyNode, setEdge, modifyEdge, insertLeft, insertRight, insertChild, appendChild, treeZipper, zipper =
-        require("./zipper"),
+var zipper = require("./zipper"),
     right = zipper["right"],
     left = zipper["left"],
     up = zipper["up"],
     down = zipper["down"],
     stream = require("nu-stream")["stream"],
     foldl = stream["foldl"],
-    map = stream["map"];
+    map = stream["map"],
+    Pair, pairKey, pairValue, edgePath, nodePath, node, edge, childNode, parentNode, childNodes, edges, child, sibling,
+        setNode, modifyNode, setEdge, modifyEdge, insertLeft, insertRight, insertChild, appendChild, treeZipper;
 (Pair = (function(key, value) {
     return ({
         "key": key,

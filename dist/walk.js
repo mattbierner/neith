@@ -2,16 +2,15 @@
  * THIS FILE IS AUTO GENERATED FROM 'lib/walk.kep'
  * DO NOT EDIT
 */
-define(["require", "exports"], (function(require, exports) {
+define(["require", "exports", "./zipper"], (function(require, exports, zipper) {
     "use strict";
-    var forChildren, walk, postWalk, preWalk, zipper = require("./zipper"),
-        isLeaf = zipper["isLeaf"],
+    var isLeaf = zipper["isLeaf"],
         up = zipper["up"],
         down = zipper["down"],
         right = zipper["right"],
         seq = zipper["seq"],
         whilst = zipper["whilst"],
-        id = (function(x) {
+        forChildren, walk, postWalk, preWalk, id = (function(x) {
             return x;
         });
     (forChildren = (function(f, ctx) {
