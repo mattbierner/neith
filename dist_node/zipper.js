@@ -1,8 +1,12 @@
 /*
- * THIS FILE IS AUTO GENERATED from 'lib/zipper.kep'
+ * THIS FILE IS AUTO GENERATED FROM 'lib/zipper.kep'
  * DO NOT EDIT
-*/"use strict";
-var __o = require("nu-stream")["stream"],
+*/
+"use strict";
+var extract, children, parent, path, lefts, rights, hasChildren, hasParent, isRoot, isChild, isLeaf, isFirst, isLast,
+        up, down, left, right, whilst, recur, seq, any, root, leftmost, rightmost, leftLeaf, rightLeaf, nextUpDfs,
+        nextDfs, prevDfs, replace, modify, remove, setLefts, modifyLefts, setRights, modifyRights, insertLeft,
+        insertRight, insertChild, appendChild, detach, zipper, __o = require("nu-stream")["stream"],
     append = __o["append"],
     cons = __o["cons"],
     first = __o["first"],
@@ -12,16 +16,7 @@ var __o = require("nu-stream")["stream"],
     reverse = __o["reverse"],
     __o0 = require("nu-stream")["select"],
     skip = __o0["skip"],
-    extract, children, parent, path, lefts, rights, hasChildren, hasParent, isRoot, isChild, isLeaf, isFirst, isLast,
-        up, down, left, right, whilst, recur, seq, any, root, leftmost, rightmost, leftLeaf, rightLeaf, nextUpDfs,
-        nextDfs, prevDfs, replace, modify, remove, setLefts, modifyLefts, setRights, modifyRights, insertLeft,
-        insertRight, insertChild, appendChild, detach, zipper, x, reduceRight = Function.prototype.call.bind(Array.prototype
-            .reduceRight),
-    flip = (function(f) {
-        return (function(x, y) {
-            return f(y, x);
-        });
-    }),
+    reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight),
     Context = (function(loc, children, constructNode) {
         var self = this;
         (self.loc = loc);
@@ -71,17 +66,9 @@ var getLoc = (function(ctx) {
     modifyLoc = (function(ctx, f) {
         return setLoc(ctx, f(getLoc(ctx)));
     }),
-    setFocus = (function(ctx, f) {
-        return modifyLoc(ctx, (function(loc) {
-            return loc.setFocus(f);
-        }));
-    }),
     dirty = (function(ctx) {
         return getLoc(ctx)
             .dirty;
-    }),
-    markDirty = (function(ctx) {
-        return ctx.setLoc(ctx.loc.setDirty(true));
     }),
     getPath = (function(ctx) {
         return getLoc(ctx)
@@ -119,49 +106,39 @@ var getLoc = (function(ctx) {
     return getLoc(ctx)
         .parent;
 }));
-(hasChildren = (function(f, g) {
-    return (function(x) {
-        return f(g(x));
-    });
-})((function(f, g) {
-    return (function(x) {
-        return f(g(x));
-    });
-})((function(x) {
-    return (!x);
-}), isEmpty), children));
-(hasParent = (function(f, g) {
-    return (function(x) {
-        return f(g(x));
-    });
-})(((x = null), (function(y) {
-    return (x !== y);
-})), parent));
-(isRoot = (function(f, g) {
-    return (function(x) {
-        return f(g(x));
-    });
-})((function(x) {
-    return (!x);
-}), hasParent));
+var y = isEmpty,
+    y0 = children;
+(hasChildren = (function(x) {
+    var x0 = y0(x),
+        x1 = y(x0);
+    return (!x1);
+}));
+var x = parent;
+(hasParent = (function(x0) {
+    var y1 = x(x0);
+    return (null !== y1);
+}));
+var y1 = hasParent;
+(isRoot = (function(x0) {
+    var x1 = y1(x0);
+    return (!x1);
+}));
 (isChild = hasParent);
-(isLeaf = (function(f, g) {
-    return (function(x) {
-        return f(g(x));
-    });
-})((function(x) {
-    return (!x);
-}), hasChildren));
-(isFirst = (function(f, g) {
-    return (function(x) {
-        return f(g(x));
-    });
-})(isEmpty, lefts));
-(isLast = (function(f, g) {
-    return (function(x) {
-        return f(g(x));
-    });
-})(isEmpty, rights));
+var y2 = hasChildren;
+(isLeaf = (function(x0) {
+    var x1 = y2(x0);
+    return (!x1);
+}));
+var x0 = lefts,
+    y3 = isEmpty;
+(isFirst = (function(x1) {
+    return y3(x0(x1));
+}));
+var x1 = rights,
+    y4 = isEmpty;
+(isLast = (function(x2) {
+    return y4(x1(x2));
+}));
 (up = (function(ctx) {
     return (isRoot(ctx) ? null : setLoc(ctx, (dirty(ctx) ? parent(ctx)
         .setFocus(constructParent(ctx))
@@ -214,19 +191,23 @@ var or = (function(p, c) {
 (leftLeaf = recur.bind(null, down));
 (rightLeaf = recur.bind(null, seq(down, rightmost)));
 (nextUpDfs = (function(ctx) {
-    var parent = up(ctx);
-    return (parent ? (right(parent) || nextUpDfs(parent)) : parent);
+    var parent0 = up(ctx);
+    return (parent0 ? (right(parent0) || nextUpDfs(parent0)) : parent0);
 }));
 (nextDfs = any(down, right, nextUpDfs));
 (prevDfs = (function(ctx) {
     var l = left(ctx);
     return (l ? rightLeaf(l) : up(ctx));
 }));
-(replace = (function(f, g) {
-    return (function() {
-        return f(g.apply(null, arguments));
-    });
-})(markDirty, flip(setFocus)));
+var x2 = (function(x3, y5) {
+    return modifyLoc(y5, (function(loc) {
+        return loc.setFocus(x3);
+    }));
+});
+(replace = (function() {
+    var ctx = x2.apply(null, arguments);
+    return ctx.setLoc(ctx.loc.setDirty(true));
+}));
 (modify = (function(f, ctx) {
     return replace(f(extract(ctx)), ctx);
 }));
@@ -268,8 +249,8 @@ var or = (function(p, c) {
 (detach = (function(ctx) {
     return setLoc(ctx, Loc.empty.setFocus(extract(ctx)));
 }));
-(zipper = (function(children, constructNode, focus) {
-    return new(Context)(Loc.empty.setFocus(focus), children, constructNode);
+(zipper = (function(children0, constructNode, focus) {
+    return new(Context)(Loc.empty.setFocus(focus), children0, constructNode);
 }));
 (exports["extract"] = extract);
 (exports["children"] = children);

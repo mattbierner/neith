@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 1.6.2 - April 7, 2014
+* Performance improvements though recompile with khepri V0.21.13.
+
 ## 1.6.0 - Feb 26, 2014
 * Added `tree::forChildren` to visit all children.
 * Changed behavior of `walk` to be more predictable. This breaks support for some

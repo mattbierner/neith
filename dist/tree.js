@@ -1,17 +1,19 @@
 /*
- * THIS FILE IS AUTO GENERATED from 'lib/tree.kep'
+ * THIS FILE IS AUTO GENERATED FROM 'lib/tree.kep'
  * DO NOT EDIT
-*/define(["require", "exports", "./zipper", "nu-stream/stream"], (function(require, exports, zipper, stream) {
+*/
+define(["require", "exports"], (function(require, exports) {
     "use strict";
-    var right = zipper["right"],
+    var Pair, pairKey, pairValue, edgePath, nodePath, node, edge, childNode, parentNode, childNodes, edges,
+            child, sibling, setNode, modifyNode, setEdge, modifyEdge, insertLeft, insertRight, insertChild,
+            appendChild, treeZipper, zipper = require("./zipper"),
+        right = zipper["right"],
         left = zipper["left"],
         up = zipper["up"],
         down = zipper["down"],
+        stream = require("nu-stream/stream"),
         foldl = stream["foldl"],
-        map = stream["map"],
-        Pair, pairKey, pairValue, edgePath, nodePath, node, edge, childNode, parentNode, childNodes, edges,
-            child, sibling, setNode, modifyNode, setEdge, modifyEdge, insertLeft, insertRight, insertChild,
-            appendChild, treeZipper;
+        map = stream["map"];
     (Pair = (function(key, value) {
         return ({
             "key": key,
@@ -26,101 +28,101 @@
         var value = __o["value"];
         return value;
     }));
-    (node = (function(f, g) {
-        return (function(x) {
-            return f(g(x));
-        });
-    })(pairValue, zipper.extract));
-    (edge = (function(f, g) {
-        return (function(x) {
-            return f(g(x));
-        });
-    })(pairKey, zipper.extract));
-    (nodePath = (function(f, g) {
-        return (function(x) {
-            return f(g(x));
-        });
-    })(map.bind(null, pairValue), zipper.path));
-    (edgePath = (function(f, g) {
-        return (function(x) {
-            return f(g(x));
-        });
-    })(map.bind(null, pairKey), zipper.path));
-    (parentNode = (function(f, g) {
-        return (function(x) {
-            return f(g(x));
-        });
-    })(pairValue, zipper.parent));
-    (childNodes = (function(f, g) {
-        return (function(x) {
-            return f(g(x));
-        });
-    })(map.bind(null, pairValue), zipper.children));
-    (edges = (function(f, g) {
-        return (function(x) {
-            return f(g(x));
-        });
-    })(map.bind(null, pairKey), zipper.children));
-    (childNode = (function(edge, ctx) {
-        var c = child(edge, ctx);
+    var x = zipper.extract,
+        y = pairValue;
+    (node = (function(x0) {
+        return y(x(x0));
+    }));
+    var x0 = zipper.extract,
+        y0 = pairKey;
+    (edge = (function(x1) {
+        return y0(x0(x1));
+    }));
+    var x1 = zipper.path,
+        y1 = map.bind(null, pairValue);
+    (nodePath = (function(x2) {
+        return y1(x1(x2));
+    }));
+    var x2 = zipper.path,
+        y2 = map.bind(null, pairKey);
+    (edgePath = (function(x3) {
+        return y2(x2(x3));
+    }));
+    var x3 = zipper.parent,
+        y3 = pairValue;
+    (parentNode = (function(x4) {
+        return y3(x3(x4));
+    }));
+    var x4 = zipper.children,
+        y4 = map.bind(null, pairValue);
+    (childNodes = (function(x5) {
+        return y4(x4(x5));
+    }));
+    var x5 = zipper.children,
+        y5 = map.bind(null, pairKey);
+    (edges = (function(x6) {
+        return y5(x5(x6));
+    }));
+    (childNode = (function(edge0, ctx) {
+        var c = child(edge0, ctx);
         return (c && node(c));
     }));
-    var findEdge = (function(e, op, ctx) {
-        var x;
-        return zipper.whilst((function(f, g) {
-            return (function(x) {
-                return f(g(x));
-            });
-        })(((x = e), (function(y) {
-            return (x !== y);
-        })), edge), op, ctx);
-    });
     (sibling = (function(e, ctx) {
-        return (findEdge(e, left, ctx) || findEdge(e, right, right(ctx)));
+        var op, x6, op0, ctx0, x6;
+        return (((op = left), zipper.whilst(((x6 = edge), (function(x7) {
+            var y6 = x6(x7);
+            return (e !== y6);
+        })), op, ctx)) || ((op0 = right), (ctx0 = right(ctx)), zipper.whilst(((x6 = edge), (
+            function(x7) {
+                var y6 = x6(x7);
+                return (e !== y6);
+            })), op0, ctx0)));
     }));
-    (child = (function(edge, ctx) {
-        return sibling(edge, down(ctx));
+    (child = (function(edge0, ctx) {
+        return sibling(edge0, down(ctx));
     }));
-    (setNode = (function(node, ctx) {
-        return zipper.replace(Pair(edge(ctx), node), ctx);
+    (setNode = (function(node0, ctx) {
+        return zipper.replace(Pair(edge(ctx), node0), ctx);
     }));
     (modifyNode = (function(f, ctx) {
         return setNode(f(node(ctx)), ctx);
     }));
-    (setEdge = (function(edge, ctx) {
-        return zipper.replace(Pair(edge, node(ctx)), ctx);
+    (setEdge = (function(edge0, ctx) {
+        return zipper.replace(Pair(edge0, node(ctx)), ctx);
     }));
     (modifyEdge = (function(f, ctx) {
         return setEdge(f(edge(ctx)), ctx);
     }));
-    (insertLeft = (function(edge, node, ctx) {
-        return zipper.insertLeft(Pair(edge, node), ctx);
+    (insertLeft = (function(edge0, node0, ctx) {
+        return zipper.insertLeft(Pair(edge0, node0), ctx);
     }));
-    (insertRight = (function(edge, node, ctx) {
-        return zipper.insertRight(Pair(edge, node), ctx);
+    (insertRight = (function(edge0, node0, ctx) {
+        return zipper.insertRight(Pair(edge0, node0), ctx);
     }));
-    (insertChild = (function(edge, node, ctx) {
-        return zipper.insertChild(Pair(edge, node), ctx);
+    (insertChild = (function(edge0, node0, ctx) {
+        return zipper.insertChild(Pair(edge0, node0), ctx);
     }));
-    (appendChild = (function(edge, node, ctx) {
-        return zipper.appendChild(Pair(edge, node), ctx);
+    (appendChild = (function(edge0, node0, ctx) {
+        return zipper.appendChild(Pair(edge0, node0), ctx);
     }));
     var reducer = (function(p, __o) {
         var key = __o["key"],
             value = __o["value"];
-        if ((!p.hasOwnProperty(key)))(p[key] = value);
+        if ((!p.hasOwnProperty(key))) {
+            (p[key] = value);
+        }
         return p;
     });
-    (treeZipper = (function(edges, getChild, constructNode, focus) {
+    (treeZipper = (function(edges0, getChild, constructNode, focus) {
         var children = (function(__o) {
             var value = __o["value"];
-            return map((function(x) {
-                return Pair(x, getChild(value, x));
-            }), edges(value));
+            return map((function(x6) {
+                return Pair(x6, getChild(value, x6));
+            }), edges0(value));
         }),
-            _constructNode = (function(parent, children) {
-                return Pair(pairKey(parent), constructNode(pairValue(parent), children, (function() {
-                    return foldl(reducer, ({}), children);
+            _constructNode = (function(parent, children0) {
+                return Pair(pairKey(parent), constructNode(pairValue(parent), children0, (function() {
+                    return foldl(reducer, ({}), children0);
                 })));
             });
         return zipper.zipper(children, _constructNode, Pair(null, focus));

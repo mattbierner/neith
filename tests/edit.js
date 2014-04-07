@@ -50,6 +50,27 @@ exports.simple = function(test) {
     test.done();
 };
 
+
+exports.set_falsy = function(test) {
+    var n = tree.node(zipper.root(
+        tree.setNode(null,
+            zipper.down(binary.zipper(binary1)))));
+    
+    test.equal(
+        n.value,
+        1);
+    
+    test.equal(
+        n.left,
+        null);
+    
+    test.equal(
+        n.right.value,
+        6);
+    
+    test.done();
+};
+
 exports.editLeft = function(test) {
     test.deepEqual(
         binary.walk(
