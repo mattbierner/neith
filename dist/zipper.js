@@ -1,8 +1,7 @@
 /*
- * THIS FILE IS AUTO GENERATED FROM 'lib/zipper.kep'
+ * THIS FILE IS AUTO GENERATED from 'lib/zipper.kep'
  * DO NOT EDIT
-*/
-define(["require", "exports", "nu-stream/stream", "nu-stream/select"], (function(require, exports, __o, __o0) {
+*/define(["require", "exports", "nu-stream/stream", "nu-stream/select"], (function(require, exports, __o, __o0) {
     "use strict";
     var append = __o["append"],
         cons = __o["cons"],
@@ -57,22 +56,17 @@ define(["require", "exports", "nu-stream/stream", "nu-stream/select"], (function
         var self = this;
         return new(Loc)(focus, self.parent, self.path, left, right, self.dirty);
     }));
-    var getLoc = (function(ctx) {
-        return ctx.loc;
+    var modifyLoc = (function(ctx, f) {
+        var loc = f(ctx.loc);
+        return ctx.setLoc(loc);
     }),
-        setLoc = (function(ctx, loc) {
-            return ctx.setLoc(loc);
+        dirty = (function(x) {
+            var x0 = x.loc;
+            return x0.dirty;
         }),
-        modifyLoc = (function(ctx, f) {
-            return setLoc(ctx, f(getLoc(ctx)));
-        }),
-        dirty = (function(ctx) {
-            return getLoc(ctx)
-                .dirty;
-        }),
-        getPath = (function(ctx) {
-            return getLoc(ctx)
-                .path;
+        getPath = (function(x) {
+            var x0 = x.loc;
+            return x0.path;
         }),
         pushPath = (function(x, ctx) {
             return cons(x, getPath(ctx));
@@ -84,27 +78,27 @@ define(["require", "exports", "nu-stream/stream", "nu-stream/select"], (function
             return construct(ctx, parent(ctx)
                 .focus, append(reverse(lefts(ctx)), cons(extract(ctx), NIL), rights(ctx)));
         });
-    (extract = (function(ctx) {
-        return getLoc(ctx)
-            .focus;
+    (extract = (function(x) {
+        var x0 = x.loc;
+        return x0.focus;
     }));
     (path = (function(ctx) {
-        return cons(extract(ctx), getPath(ctx));
+        return pushPath(extract(ctx), ctx);
     }));
-    (lefts = (function(ctx) {
-        return getLoc(ctx)
-            .left;
+    (lefts = (function(x) {
+        var x0 = x.loc;
+        return x0.left;
     }));
-    (rights = (function(ctx) {
-        return getLoc(ctx)
-            .right;
+    (rights = (function(x) {
+        var x0 = x.loc;
+        return x0.right;
+    }));
+    (parent = (function(x) {
+        var x0 = x.loc;
+        return x0.parent;
     }));
     (children = (function(ctx) {
         return ctx.children(extract(ctx));
-    }));
-    (parent = (function(ctx) {
-        return getLoc(ctx)
-            .parent;
     }));
     var y = isEmpty,
         y0 = children;
@@ -113,51 +107,49 @@ define(["require", "exports", "nu-stream/stream", "nu-stream/select"], (function
             x1 = y(x0);
         return (!x1);
     }));
-    var x = parent;
-    (hasParent = (function(x0) {
-        var y1 = x(x0);
+    (hasParent = (function(x) {
+        var y1 = parent(x);
         return (null !== y1);
     }));
     var y1 = hasParent;
-    (isRoot = (function(x0) {
-        var x1 = y1(x0);
-        return (!x1);
+    (isRoot = (function(x) {
+        var x0 = y1(x);
+        return (!x0);
     }));
     (isChild = hasParent);
     var y2 = hasChildren;
-    (isLeaf = (function(x0) {
-        var x1 = y2(x0);
-        return (!x1);
+    (isLeaf = (function(x) {
+        var x0 = y2(x);
+        return (!x0);
     }));
-    var x0 = lefts,
-        y3 = isEmpty;
-    (isFirst = (function(x1) {
-        return y3(x0(x1));
+    var y3 = isEmpty;
+    (isFirst = (function(x) {
+        return y3(lefts(x));
     }));
-    var x1 = rights,
-        y4 = isEmpty;
-    (isLast = (function(x2) {
-        return y4(x1(x2));
+    var y4 = isEmpty;
+    (isLast = (function(x) {
+        return y4(rights(x));
     }));
     (up = (function(ctx) {
-        return (isRoot(ctx) ? null : setLoc(ctx, (dirty(ctx) ? parent(ctx)
+        var loc;
+        return (isRoot(ctx) ? null : ((loc = (dirty(ctx) ? parent(ctx)
             .setFocus(constructParent(ctx))
-            .setDirty(true) : parent(ctx))));
+            .setDirty(true) : parent(ctx))), ctx.setLoc(loc)));
     }));
     (down = (function(ctx) {
-        var cs = children(ctx);
-        return (isEmpty(cs) ? null : setLoc(ctx, new(Loc)(first(cs), getLoc(ctx), pushPath(extract(ctx),
-            ctx), NIL, rest(cs), false)));
+        var loc, cs = children(ctx);
+        return (isEmpty(cs) ? null : ((loc = new(Loc)(first(cs), ctx.loc, pushPath(extract(ctx), ctx),
+            NIL, rest(cs), false)), ctx.setLoc(loc)));
     }));
     (left = (function(ctx) {
-        var ls;
-        return (isFirst(ctx) ? null : ((ls = lefts(ctx)), setLoc(ctx, getLoc(ctx)
-            .setSurround(rest(ls), first(ls), cons(extract(ctx), rights(ctx))))));
+        var ls, loc;
+        return (isFirst(ctx) ? null : ((ls = lefts(ctx)), (loc = ctx.loc.setSurround(rest(ls), first(ls),
+            cons(extract(ctx), rights(ctx)))), ctx.setLoc(loc)));
     }));
     (right = (function(ctx) {
-        var rs;
-        return (isLast(ctx) ? null : ((rs = rights(ctx)), setLoc(ctx, getLoc(ctx)
-            .setSurround(cons(extract(ctx), lefts(ctx)), first(rs), rest(rs)))));
+        var rs, loc;
+        return (isLast(ctx) ? null : ((rs = rights(ctx)), (loc = ctx.loc.setSurround(cons(extract(ctx),
+            lefts(ctx)), first(rs), rest(rs))), ctx.setLoc(loc)));
     }));
     (whilst = (function(pred, op, ctx) {
         return ((ctx && pred(ctx)) ? whilst(pred, op, op(ctx)) : ctx);
@@ -199,13 +191,13 @@ define(["require", "exports", "nu-stream/stream", "nu-stream/select"], (function
         var l = left(ctx);
         return (l ? rightLeaf(l) : up(ctx));
     }));
-    var x2 = (function(x3, y5) {
+    var x = (function(x0, y5) {
         return modifyLoc(y5, (function(loc) {
-            return loc.setFocus(x3);
+            return loc.setFocus(x0);
         }));
     });
     (replace = (function() {
-        var ctx = x2.apply(null, arguments);
+        var ctx = x.apply(null, arguments);
         return ctx.setLoc(ctx.loc.setDirty(true));
     }));
     (modify = (function(f, ctx) {
@@ -247,7 +239,8 @@ define(["require", "exports", "nu-stream/stream", "nu-stream/select"], (function
         return (hasChildren(ctx) ? up(insertRight(node, rightmost(down(ctx)))) : insertChild(node, ctx));
     }));
     (detach = (function(ctx) {
-        return setLoc(ctx, Loc.empty.setFocus(extract(ctx)));
+        var loc = Loc.empty.setFocus(extract(ctx));
+        return ctx.setLoc(loc);
     }));
     (zipper = (function(children0, constructNode, focus) {
         return new(Context)(Loc.empty.setFocus(focus), children0, constructNode);

@@ -8,7 +8,7 @@ package (
     postWalk
     preWalk)
 with
-    import './zipper' zipper#{
+    import './zipper' {
         isLeaf
         up
         down
@@ -17,7 +17,7 @@ with
         whilst}
 in {
 
-var id = \x -> x;
+var id := \x -> x;
 
 /**
  * Visit all children of the current context with function `f`.
@@ -56,7 +56,7 @@ in
  * @param post
  * @param ctx
  */
-postWalk = \post ctx ->
+postWalk := \post ctx ->
     walk(id, post, ctx);
 
 /**
@@ -67,7 +67,7 @@ postWalk = \post ctx ->
  * @param pre
  * @param ctx
  */
-preWalk = \pre ctx ->
+preWalk := \pre ctx ->
     walk(pre, id, ctx);
 
 }

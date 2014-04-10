@@ -1,7 +1,10 @@
 # ChangeLog #
 
+## 1.6.3 - April 10, 2014
+* Performance improvements though recompile with khepri V0.23.0
+
 ## 1.6.2 - April 7, 2014
-* Performance improvements though recompile with khepri V0.21.13.
+* Performance improvements though recompile with khepri V0.21.13
 
 ## 1.6.0 - Feb 26, 2014
 * Added `tree::forChildren` to visit all children.

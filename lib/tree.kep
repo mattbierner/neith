@@ -56,10 +56,10 @@ in {
 
 /* Pair
  ******************************************************************************/
-Pair = \key value -> ({'key': key, 'value': value});
+Pair := \key value -> ({ key: key, value: value });
 
-pairKey = \{key} -> key;
-pairValue = \{value} -> value;
+pairKey := (.key);
+pairValue := (.value);
 
 /* Queries
  ******************************************************************************/
@@ -68,48 +68,48 @@ pairValue = \{value} -> value;
  * 
  * @param ctx
  */
-node = zipper.extract \> pairValue;
+node := zipper.extract \> pairValue;
 
 /**
  * Get the value of the edge leading to the focus.
  * 
  * @param ctx
  */
-edge = zipper.extract \> pairKey;
+edge := zipper.extract \> pairKey;
 
 /**
  * Get a list of nodes leading to, and including, the focus.
  * 
  * @return Stream.
  */
-nodePath = zipper.path \> map@pairValue;
+nodePath := zipper.path \> map@pairValue;
 
 /**
  * Get list edges leading to the focus.
  * 
  * @return Stream.
  */
-edgePath = zipper.path \> map@pairKey;
+edgePath := zipper.path \> map@pairKey;
 
 /**
  * Get the value of the parent of the focus.
  */
-parentNode = zipper.parent \> pairValue;
+parentNode := zipper.parent \> pairValue;
 
 /**
  * Get the values of all children of the focus.
  */
-childNodes = zipper.children \> map@pairValue;
+childNodes := zipper.children \> map@pairValue;
 
 /**
  * Get the values of all edges leading from the focus.
  */
-edges = zipper.children \> map@pairKey;
+edges := zipper.children \> map@pairKey;
 
 /**
  * Get the value of a child.
  */
-childNode = \edge ctx ->
+childNode := \edge ctx ->
     let c = child(edge, ctx) in
         (c && node c);
 
@@ -141,7 +141,7 @@ in
  */
 child = \edge, ctx ->
     down ctx
-        |> sibling@edge;
+        |> sibling @ edge;
 
 /* Basic Editing
  * 
@@ -194,11 +194,11 @@ setEdge = \edge, ctx ->
  * @param f Function mapping current edge to replacement.
  * @param ctx
  */
-modifyEdge = \f, ctx ->
+modifyEdge := \f ctx ->
     setEdge(
         f(edge ctx),
         ctx);
-    
+
 /* Labled Editing
  ******************************************************************************/
 /**
@@ -226,7 +226,7 @@ insertRight = \edge, node, ctx ->
  * 
  * Does not perform any checks to make sure edge is unique.
  */
-insertChild = \edge, node, ctx ->
+insertChild := \edge node ctx ->
     zipper.insertChild(
         Pair(edge, node),
         ctx);
@@ -236,7 +236,7 @@ insertChild = \edge, node, ctx ->
  * 
  * Does not perform any checks to make sure edge is unique.
  */
-appendChild = \edge, node, ctx ->
+appendChild := \edge node ctx ->
     zipper.appendChild(
         Pair(edge, node),
         ctx);
@@ -253,7 +253,7 @@ appendChild = \edge, node, ctx ->
  * function that returns a map of edges to children.
  * @param focus Starting point and current context for the zipper.
  */
-treeZipper = let
+treeZipper := let
     reducer = \p {key value} -> {
         if (!p.hasOwnProperty(key))
             p.(key) = value;
@@ -266,13 +266,13 @@ in
                 \x -> Pair(x, getChild(value, x)),
                 edges(value)),
             
-        _constructNode = \parent, children ->
+        _constructNode = \parent children ->
             Pair(
                 pairKey(parent),
                 constructNode(
                     pairValue(parent),
                     children,
-                    \() -> foldl(reducer, {}, children)))
+                    foldl@(reducer, {}, children)))
     in
         zipper.zipper(
             children,

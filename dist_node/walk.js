@@ -1,15 +1,14 @@
 /*
- * THIS FILE IS AUTO GENERATED FROM 'lib/walk.kep'
+ * THIS FILE IS AUTO GENERATED from 'lib/walk.kep'
  * DO NOT EDIT
-*/
-"use strict";
-var zipper = require("./zipper"),
-    isLeaf = zipper["isLeaf"],
-    up = zipper["up"],
-    down = zipper["down"],
-    right = zipper["right"],
-    seq = zipper["seq"],
-    whilst = zipper["whilst"],
+*/"use strict";
+var __o = require("./zipper"),
+    isLeaf = __o["isLeaf"],
+    up = __o["up"],
+    down = __o["down"],
+    right = __o["right"],
+    seq = __o["seq"],
+    whilst = __o["whilst"],
     forChildren, walk, postWalk, preWalk, id = (function(x) {
         return x;
     });
