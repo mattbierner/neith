@@ -8,8 +8,10 @@
         first = __o["first"],
         rest = __o["rest"],
         isEmpty = __o["isEmpty"],
+        map = __o["map"],
         NIL = __o["NIL"],
         reverse = __o["reverse"],
+        stream = __o["stream"],
         skip = __o0["skip"],
         extract, children, parent, path, lefts, rights, hasChildren, hasParent, isRoot, isChild, isLeaf,
             isFirst, isLast, up, down, left, right, whilst, recur, seq, any, root, leftmost, rightmost,
@@ -26,130 +28,162 @@
         var self = this;
         return new(Context)(loc, self.children, self.constructNode);
     }));
-    var Loc = (function(focus, parent, path, left, right, dirty) {
+    var Focus = (function(focus, dirty, children) {
         var self = this;
         (self.focus = focus);
-        (self.parent = parent);
-        (self.path = path);
-        (self.left = left);
-        (self.right = right);
         (self.dirty = dirty);
+        (self.children = children);
     });
-    (Loc.empty = new(Loc)(null, null, NIL, NIL, NIL, false));
+    (Focus.prototype.setDirty = (function(dirty) {
+        var self = this;
+        return new(Focus)(self.focus, dirty, (dirty ? null : self.children));
+    }));
+    (Focus.prototype.setChildren = (function(children) {
+        var self = this;
+        return new(Focus)(self.focus, self.dirty, children);
+    }));
+    var focusList = map.bind(null, (function(y) {
+        return new(Focus)(y);
+    })),
+        unFocusList = map.bind(null, (function(x) {
+            return x.focus;
+        })),
+        Loc = (function(focus, parent, left, right) {
+            var self = this;
+            (self.focus = focus);
+            (self.parent = parent);
+            (self.left = left);
+            (self.right = right);
+        });
+    (Loc.empty = new(Loc)(null, null, NIL, NIL));
     (Loc.prototype.setFocus = (function(focus) {
         var self = this;
-        return new(Loc)(focus, self.parent, self.path, self.left, self.right, self.dirty);
+        return new(Loc)(focus, self.parent, self.left, self.right);
+    }));
+    (Loc.prototype.setParent = (function(parent) {
+        var self = this;
+        return new(Loc)(self.focus, parent, self.left, self.right);
     }));
     (Loc.prototype.setLeft = (function(left) {
         var self = this;
-        return new(Loc)(self.focus, self.parent, self.path, left, self.right, self.dirty);
+        return new(Loc)(self.focus, self.parent, left, self.right);
     }));
     (Loc.prototype.setRight = (function(right) {
         var self = this;
-        return new(Loc)(self.focus, self.parent, self.path, self.left, right, self.dirty);
+        return new(Loc)(self.focus, self.parent, self.left, right);
     }));
-    (Loc.prototype.setDirty = (function(dirty) {
-        var self = this;
-        return new(Loc)(self.focus, self.parent, self.path, self.left, self.right, dirty);
-    }));
-    (Loc.prototype.setSurround = (function(left, focus, right) {
-        var self = this;
-        return new(Loc)(focus, self.parent, self.path, left, right, self.dirty);
-    }));
-    var modifyLoc = (function(ctx, f) {
-        var loc = f(ctx.loc);
-        return ctx.setLoc(loc);
+    var setSurround = (function(loc, left, focus, right) {
+        return new(Loc)(focus, loc.parent, left, right);
     }),
-        dirty = (function(x) {
-            var x0 = x.loc;
-            return x0.dirty;
+        modifyLoc = (function(ctx, f) {
+            var loc = f(ctx.loc);
+            return ctx.setLoc(loc);
         }),
-        getPath = (function(x) {
+        getFocus = (function(x) {
             var x0 = x.loc;
-            return x0.path;
+            return x0.focus;
         }),
-        pushPath = (function(x, ctx) {
-            return cons(x, getPath(ctx));
+        setFocus = (function(ctx, f) {
+            return modifyLoc(ctx, (function(loc) {
+                return loc.setFocus(f);
+            }));
+        }),
+        getParent = (function(x) {
+            var x0 = x.loc;
+            return x0.parent;
+        }),
+        getLefts = (function(x) {
+            var x0 = x.loc;
+            return x0.left;
+        }),
+        getRights = (function(x) {
+            var x0 = x.loc;
+            return x0.right;
         }),
         construct = (function(ctx, parent, children) {
-            return ctx.constructNode(parent, children);
+            return new(Focus)(ctx.constructNode(parent, children), false, children);
         }),
         constructParent = (function(ctx) {
-            return construct(ctx, parent(ctx)
-                .focus, append(reverse(lefts(ctx)), cons(extract(ctx), NIL), rights(ctx)));
-        });
-    (extract = (function(x) {
-        var x0 = x.loc;
-        return x0.focus;
+            return construct(ctx, getParent(ctx)
+                .focus.focus, append(reverse(lefts(ctx)), cons(extract(ctx), NIL), rights(ctx)));
+        }),
+        x = getFocus;
+    (extract = (function(x0) {
+        var x1 = x(x0);
+        return x1.focus;
     }));
     (path = (function(ctx) {
-        return pushPath(extract(ctx), ctx);
+        return (ctx ? stream(extract(ctx), (function() {
+            return path(up(ctx));
+        })) : NIL);
     }));
-    (lefts = (function(x) {
-        var x0 = x.loc;
-        return x0.left;
+    (lefts = (function(x0) {
+        return unFocusList(getLefts(x0));
     }));
-    (rights = (function(x) {
-        var x0 = x.loc;
-        return x0.right;
+    (rights = (function(x0) {
+        return unFocusList(getRights(x0));
     }));
-    (parent = (function(x) {
-        var x0 = x.loc;
-        return x0.parent;
+    (parent = (function(x0) {
+        var parent0, loc, parent1;
+        return extract(((parent0 = getParent(x0)), ((parent0 && parent0.focus.dirty) ? ((loc = parent0.setFocus(
+            constructParent(x0))), (parent1 = loc.parent), (parent1 ? loc.setParent(
+            parent1.setFocus(parent1.focus.setDirty(true))) : loc)) : parent0)));
     }));
     (children = (function(ctx) {
-        return ctx.children(extract(ctx));
+        return (ctx.loc.focus.children || ctx.children(extract(ctx)));
     }));
     var y = isEmpty,
         y0 = children;
-    (hasChildren = (function(x) {
-        var x0 = y0(x),
-            x1 = y(x0);
-        return (!x1);
+    (hasChildren = (function(x0) {
+        var x1 = y0(x0),
+            x2 = y(x1);
+        return (!x2);
     }));
-    (hasParent = (function(x) {
-        var y1 = parent(x);
+    (hasParent = (function(x0) {
+        var y1 = getParent(x0);
         return (null !== y1);
     }));
     var y1 = hasParent;
-    (isRoot = (function(x) {
-        var x0 = y1(x);
-        return (!x0);
+    (isRoot = (function(x0) {
+        var x1 = y1(x0);
+        return (!x1);
     }));
     (isChild = hasParent);
     var y2 = hasChildren;
-    (isLeaf = (function(x) {
-        var x0 = y2(x);
-        return (!x0);
+    (isLeaf = (function(x0) {
+        var x1 = y2(x0);
+        return (!x1);
     }));
     var y3 = isEmpty;
-    (isFirst = (function(x) {
-        return y3(lefts(x));
+    (isFirst = (function(x0) {
+        return y3(getLefts(x0));
     }));
     var y4 = isEmpty;
-    (isLast = (function(x) {
-        return y4(rights(x));
+    (isLast = (function(x0) {
+        return y4(getRights(x0));
     }));
     (up = (function(ctx) {
-        var loc;
-        return (isRoot(ctx) ? null : ((loc = (dirty(ctx) ? parent(ctx)
-            .setFocus(constructParent(ctx))
-            .setDirty(true) : parent(ctx))), ctx.setLoc(loc)));
+        var parent0, loc, parent1;
+        return (isRoot(ctx) ? null : ctx.setLoc(((parent0 = getParent(ctx)), ((parent0 && parent0.focus
+            .dirty) ? ((loc = parent0.setFocus(constructParent(ctx))), (parent1 = loc.parent), (
+            parent1 ? loc.setParent(parent1.setFocus(parent1.focus.setDirty(true))) :
+            loc)) : parent0))));
     }));
     (down = (function(ctx) {
-        var loc, cs = children(ctx);
-        return (isEmpty(cs) ? null : ((loc = new(Loc)(first(cs), ctx.loc, pushPath(extract(ctx), ctx),
-            NIL, rest(cs), false)), ctx.setLoc(loc)));
+        var loc, loc0, cs = children(ctx);
+        return (isEmpty(cs) ? null : ((loc = new(Loc)(new(Focus)(first(cs)), ((loc0 = ctx.loc), (loc0.focus
+                .children ? loc0 : loc0.setFocus(loc0.focus.setChildren(cs)))), NIL,
+            focusList(rest(cs)))), ctx.setLoc(loc)));
     }));
     (left = (function(ctx) {
         var ls, loc;
-        return (isFirst(ctx) ? null : ((ls = lefts(ctx)), (loc = ctx.loc.setSurround(rest(ls), first(ls),
-            cons(extract(ctx), rights(ctx)))), ctx.setLoc(loc)));
+        return (isFirst(ctx) ? null : ((ls = getLefts(ctx)), (loc = setSurround(ctx.loc, rest(ls),
+            first(ls), cons(getFocus(ctx), getRights(ctx)))), ctx.setLoc(loc)));
     }));
     (right = (function(ctx) {
         var rs, loc;
-        return (isLast(ctx) ? null : ((rs = rights(ctx)), (loc = ctx.loc.setSurround(cons(extract(ctx),
-            lefts(ctx)), first(rs), rest(rs))), ctx.setLoc(loc)));
+        return (isLast(ctx) ? null : ((rs = getRights(ctx)), (loc = setSurround(ctx.loc, cons(getFocus(
+            ctx), getLefts(ctx)), first(rs), rest(rs))), ctx.setLoc(loc)));
     }));
     (whilst = (function(pred, op, ctx) {
         return ((ctx && pred(ctx)) ? whilst(pred, op, op(ctx)) : ctx);
@@ -161,7 +195,7 @@
     var and = (function(p, c) {
         return (function(ctx) {
             var next;
-            return (ctx ? ((next = c(ctx)), (next && p(next))) : ctx);
+            return (ctx && ((next = c(ctx)), (next && p(next))));
         });
     });
     (seq = (function() {
@@ -191,39 +225,50 @@
         var l = left(ctx);
         return (l ? rightLeaf(l) : up(ctx));
     }));
-    var x = (function(x0, y5) {
-        return modifyLoc(y5, (function(loc) {
-            return loc.setFocus(x0);
-        }));
-    });
-    (replace = (function() {
-        var ctx = x.apply(null, arguments);
-        return ctx.setLoc(ctx.loc.setDirty(true));
+    (replace = (function(node, ctx) {
+        var ctx0 = setFocus(ctx, new(Focus)(node)),
+            loc = ctx0.loc,
+            parent0 = loc.parent,
+            loc0 = (parent0 ? loc.setParent(parent0.setFocus(parent0.focus.setDirty(true))) : loc);
+        return ctx0.setLoc(loc0);
     }));
     (modify = (function(f, ctx) {
-        return replace(f(extract(ctx)), ctx);
+        var node = f(extract(ctx)),
+            ctx0 = setFocus(ctx, new(Focus)(node)),
+            loc = ctx0.loc,
+            parent0 = loc.parent,
+            loc0 = (parent0 ? loc.setParent(parent0.setFocus(parent0.focus.setDirty(true))) : loc);
+        return ctx0.setLoc(loc0);
     }));
     (remove = (function(ctx) {
-        return (isLast(ctx) ? (isFirst(ctx) ? (hasParent(ctx) ? constructParent(ctx) : null) :
+        var loc;
+        return (isLast(ctx) ? (isFirst(ctx) ? (hasParent(ctx) ? ((loc = getParent(ctx)
+                .setFocus(construct(ctx, getParent(ctx), NIL))), ctx.setLoc(loc)) : null) :
             setRights(NIL, left(ctx))) : modifyLefts(skip.bind(null, 1), right(ctx)));
     }));
     (setLefts = (function(ls, ctx) {
-        return modifyLoc(ctx, (function(loc) {
-            return loc.setLeft(ls)
-                .setDirty(true);
-        }));
+        var ctx0 = modifyLoc(ctx, (function(loc) {
+            return loc.setLeft(focusList(ls));
+        })),
+            loc = ctx0.loc,
+            parent0 = loc.parent,
+            loc0 = (parent0 ? loc.setParent(parent0.setFocus(parent0.focus.setDirty(true))) : loc);
+        return ctx0.setLoc(loc0);
     }));
     (modifyLefts = (function(f, ctx) {
-        return setLefts(f(lefts(ctx)), ctx);
+        return setLefts(f(unFocusList(getLefts(ctx))), ctx);
     }));
     (setRights = (function(rs, ctx) {
-        return modifyLoc(ctx, (function(loc) {
-            return loc.setRight(rs)
-                .setDirty(true);
-        }));
+        var ctx0 = modifyLoc(ctx, (function(loc) {
+            return loc.setRight(focusList(rs));
+        })),
+            loc = ctx0.loc,
+            parent0 = loc.parent,
+            loc0 = (parent0 ? loc.setParent(parent0.setFocus(parent0.focus.setDirty(true))) : loc);
+        return ctx0.setLoc(loc0);
     }));
     (modifyRights = (function(f, ctx) {
-        return setRights(f(rights(ctx)), ctx);
+        return setRights(f(unFocusList(getRights(ctx))), ctx);
     }));
     (insertLeft = (function(node, ctx) {
         return modifyLefts(cons.bind(null, node), ctx);
@@ -232,18 +277,22 @@
         return modifyRights(cons.bind(null, node), ctx);
     }));
     (insertChild = (function(node, ctx) {
-        return (hasChildren(ctx) ? up(insertLeft(node, down(ctx))) : replace(construct(ctx, extract(ctx),
-            cons(node, NIL)), ctx));
+        var node0, ctx0, loc, parent0, loc0;
+        return (hasChildren(ctx) ? up(insertLeft(node, down(ctx))) : ((node0 = construct(ctx, extract(
+                ctx), cons(node, NIL))
+            .focus), (ctx0 = setFocus(ctx, new(Focus)(node0))), (loc = ctx0.loc), (parent0 =
+            loc.parent), (loc0 = (parent0 ? loc.setParent(parent0.setFocus(parent0.focus.setDirty(
+            true))) : loc)), ctx0.setLoc(loc0)));
     }));
     (appendChild = (function(node, ctx) {
         return (hasChildren(ctx) ? up(insertRight(node, rightmost(down(ctx)))) : insertChild(node, ctx));
     }));
     (detach = (function(ctx) {
-        var loc = Loc.empty.setFocus(extract(ctx));
+        var loc = Loc.empty.setFocus(new(Focus)(extract(ctx)));
         return ctx.setLoc(loc);
     }));
     (zipper = (function(children0, constructNode, focus) {
-        return new(Context)(Loc.empty.setFocus(focus), children0, constructNode);
+        return new(Context)(Loc.empty.setFocus(new(Focus)(focus)), children0, constructNode);
     }));
     (exports["extract"] = extract);
     (exports["children"] = children);

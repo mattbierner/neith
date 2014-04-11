@@ -1,5 +1,11 @@
 # ChangeLog #
 
+## 1.6.4 - April 11, 2014
+* Better dirty marking to construct fewer nodes.
+* Lazy `path` impl.
+* Fixed parent potentially returning the dirty parent value instead of the
+  reconstructed one.
+
 ## 1.6.3 - April 10, 2014
 * Performance improvements though recompile with khepri V0.23.0
 

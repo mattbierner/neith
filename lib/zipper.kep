@@ -66,8 +66,10 @@ with
         first
         rest
         isEmpty
+        map
         NIL
-        reverse},
+        reverse
+        stream},
     import 'nu-stream::select' {
         skip}
 in {
@@ -78,7 +80,7 @@ var flip := \f -> \x y -> f(y, x);
 
 // Context
 ////////////////////////////////////////
-var Context = function\loc, children, constructNode =self -> {
+var Context := function \loc children constructNode =self -> {
     self.loc = loc;
     self.children = children;
     self.constructNode = constructNode;
@@ -90,63 +92,80 @@ Context.prototype.setLoc = \loc =self->
         self.children,
         self.constructNode);
 
-// Loc
+// Focus
 ////////////////////////////////////////
-var Loc = function\focus, parent, path, left, right, dirty =self -> {
+var Focus := function \focus dirty children  =self -> {
     self.focus = focus;
-    self.parent = parent;
-    self.path = path;
-    self.left = left;
-    self.right = right;
     self.dirty = dirty;
+    self.children = children; // cached children value.
 };
 
-Loc.empty = new Loc(null, null, NIL, NIL, NIL, false);
+Focus.prototype.setDirty = \dirty =self->
+    new Focus(
+        self.focus,
+        dirty,
+        ?dirty : null : self.children); // invalidate
+
+Focus.prototype.setChildren = \children =self->
+    new Focus(
+        self.focus,
+        self.dirty,
+        children);
+
+var focusList := map @ (new, Focus);
+
+var unFocusList := map @ (.focus);
+
+// Loc
+////////////////////////////////////////
+var Loc := function\focus parent left right =self -> {
+    self.focus = focus;
+    self.parent = parent;
+    self.left = left;
+    self.right = right;
+};
+
+Loc.empty = new Loc(null, null, NIL, NIL);
 
 Loc.prototype.setFocus = \focus =self->
     new Loc(
         focus,
         self.parent,
-        self.path,
         self.left,
-        self.right,
-        self.dirty);
+        self.right);
 
+Loc.prototype.setParent = \parent =self->
+    new Loc(
+        self.focus,
+        parent,
+        self.left,
+        self.right);
+    
 Loc.prototype.setLeft = \left =self->
     new Loc(
         self.focus,
         self.parent,
-        self.path,
         left,
-        self.right,
-        self.dirty);
+        self.right);
 
 Loc.prototype.setRight = \right =self->
     new Loc(
         self.focus,
         self.parent,
-        self.path,
         self.left,
-        right,
-        self.dirty);
-    
-Loc.prototype.setDirty = \dirty =self->
-    new Loc(
-        self.focus,
-        self.parent,
-        self.path,
-        self.left,
-        self.right,
-        dirty);
+        right);
 
-Loc.prototype.setSurround = \left, focus, right =self->
+var setSurround = \loc left focus right ->
     new Loc(
         focus,
-        self.parent,
-        self.path,
+        loc.parent,
         left,
-        right,
-        self.dirty);
+        right);
+
+var updateChildren := \loc c ->
+    ?loc.focus.children
+        :loc
+        :loc.setFocus(loc.focus.setChildren(c));
 
 /* Internal operations
  ******************************************************************************/
@@ -156,47 +175,69 @@ var setLoc := \ctx loc -> ctx.setLoc(loc);
 
 var modifyLoc = \ctx f -> setLoc(ctx, f(getLoc(ctx)));
 
-var setFocus = \ctx, f -> modifyLoc(ctx, \loc -> loc.setFocus(f));
+var getFocus = getLoc \> (.focus);
 
-var dirty := getLoc \> (.dirty);
+var setFocus = \ctx f -> modifyLoc(ctx, \loc -> loc.setFocus(f));
 
-var markDirty = \ctx -> ctx.setLoc(ctx.loc.setDirty(true));
+var getParent := getLoc \> (.parent); // Current parent, not reconstructed one. May be dirty.
 
-var getPath = getLoc \> (.path);
+var getLefts := getLoc \> (.left);
 
-var pushPath = \x ctx -> cons(x, getPath(ctx));
+var getRights := getLoc \> (.right);
 
 /* Reconstruction
  ******************************************************************************/
+var dirty := getFocus \> (.dirty);
+
+var markLocDirty := \loc -> let
+    parent = loc.parent
+in
+    ?parent
+        :loc.setParent(parent.setFocus(parent.focus.setDirty(true)))
+        :loc;
+
+var markDirty := \ctx ->
+    setLoc(ctx, markLocDirty(ctx.loc));
+
 var construct = \ctx parent children ->
-    ctx.constructNode(
-        parent,
+    new Focus(
+        ctx.constructNode(parent, children),
+        false,
         children);
 
 var constructParent = \ctx -> 
     construct(ctx,
-        parent(ctx).focus,
+        getParent(ctx).focus.focus,
         append(
             reverse <| lefts ctx,
             cons(extract ctx, NIL),
             rights ctx));
 
+var moveParent := \ctx -> let
+    parent = getParent ctx
+in
+    ?parent && parent.focus.dirty
+        :markLocDirty <| parent.setFocus(constructParent(ctx))
+        :parent;
+
 /* Queries
  ******************************************************************************/
 /**
- * Get the focus.
+ * Get the focus element.
  * 
  * @param ctx
  */
-extract := getLoc \> (.focus);
+extract := getFocus \> (.focus);
 
 /**
  * Get ordered path of nodes leading to, and including, the focus.
  * 
  * @return Stream of path, may be infinite.
  */
-path := \ctx -> pushPath(extract ctx, ctx);
-
+path := \ctx ->
+    ?ctx
+        :stream(extract ctx, \-> path (up ctx))
+        :NIL;
 /**
  * Get ordered list of the focus's left siblings.
  * 
@@ -205,26 +246,27 @@ path := \ctx -> pushPath(extract ctx, ctx);
  * 
  * @return Stream, may be infinite.
  */
-lefts := getLoc \> (.left);
+lefts := getLefts \> unFocusList;
 
 /**
  * Get ordered list of the focus's right siblings.
  * 
  * @return Stream, may be infinite.
  */
-rights := getLoc \> (.right);
+rights := getRights \> unFocusList;
 
 /**
  * Get the parent of the focus.
  */
-parent := getLoc \> (.parent);
+parent := moveParent \> extract;
 
 /**
  * Get order list of focus's children.
  * 
  * @return Stream of children, may be infinite.
  */
-children = \ctx -> ctx.children(extract ctx);
+children = \ctx ->
+    (ctx.loc.focus.children || ctx.children(extract ctx));
 
 /* Node Predicates
  ******************************************************************************/
@@ -236,7 +278,7 @@ hasChildren = (!) <\ isEmpty <\ children;
 /**
  * Does the focus have a parent?
  */
-hasParent = parent \> (!==, null);
+hasParent = getParent \> (!==, null);
 
 /**
  * Is the focus a root node?
@@ -256,12 +298,12 @@ isLeaf = (!) <\ hasChildren;
 /**
  * Is the focus the leftmost of its siblings?
  */
-isFirst = lefts \> isEmpty;
+isFirst = getLefts \> isEmpty;
 
 /**
  * Is the focus the rightmost of its siblings?
  */
-isLast = rights \> isEmpty;
+isLast = getRights \> isEmpty;
 
 /* Basic Movement
  ******************************************************************************/
@@ -273,12 +315,7 @@ isLast = rights \> isEmpty;
 up = \ctx ->
     ?isRoot ctx
         :null
-        :setLoc(ctx,
-            ?dirty ctx
-                :parent(ctx)
-                    .setFocus(constructParent(ctx))
-                    .setDirty(true)
-                :parent(ctx));
+    :ctx.setLoc(moveParent ctx);
 
 /**
  * Move to the leftmost child of the focus.
@@ -290,14 +327,12 @@ down = \ctx -> let
 in
     ?isEmpty cs
         :null
-        :setLoc(ctx,
-            new Loc(
-                first cs,
-                getLoc(ctx),
-                pushPath(extract ctx, ctx),
-                NIL,
-                rest cs,
-                false));
+    :setLoc(ctx,
+        new Loc(
+            new Focus(first cs),
+            updateChildren(getLoc ctx, cs),
+            NIL,
+            focusList <| rest cs));
 
 /**
  * Move to the left sibling of the focus.
@@ -307,12 +342,12 @@ in
 left = \ctx ->
     ?isFirst ctx
         :null
-        :let ls = lefts ctx in
-            setLoc(ctx,
-                getLoc(ctx).setSurround(
-                    rest ls,
-                    first ls,
-                    cons(extract ctx, rights ctx)));
+    :let ls = getLefts ctx in
+        setLoc(ctx,
+            setSurround(getLoc ctx, 
+                rest ls,
+                first ls,
+                cons(getFocus ctx, getRights ctx)));
 
 /**
  * Move to the right sibling of the focus.
@@ -322,12 +357,12 @@ left = \ctx ->
 right = \ctx ->
     ?isLast ctx
         :null
-        :let rs = rights ctx in
-            setLoc(ctx,
-                getLoc(ctx).setSurround(
-                    cons(extract ctx, lefts ctx),
-                    first rs,
-                    rest rs));
+    :let rs = getRights ctx in
+        setLoc(ctx,
+            setSurround(getLoc ctx,
+                cons(getFocus ctx, getLefts ctx),
+                first rs,
+                rest rs));
 
 /* Compound Movement
  ******************************************************************************/
@@ -361,12 +396,9 @@ recur = \op ctx ->
  * Takes list of operations as arguments.
  */
 seq = let
-    and = \p, c ->
+    and = \p c ->
         \ctx ->
-            ?ctx
-                :let next = c ctx in
-                    (next && p next)
-                :ctx
+            (ctx && let next = c ctx in (next && p next))
 in
     \ops(...) ->
         reduceRight(ops, and);
@@ -379,7 +411,7 @@ in
 any = let
     or = \p c ->
         \ctx ->
-            ctx && (c ctx || p ctx)
+            (ctx && (c ctx || p ctx))
 in
     \ops(...) ->
         reduceRight(ops, or);
@@ -452,7 +484,8 @@ prevDfs := \ctx ->
  * @param node Replacement.
  * @param ctx
  */
-replace := flip setFocus \>> markDirty;
+replace := \node ctx ->
+    markDirty <| setFocus(ctx, new Focus(node));
 
 /**
  * Modify focus with function `f` and replace it with result.
@@ -472,7 +505,7 @@ modify = \f, ctx ->
 remove = \ctx ->
     ?isLast ctx
         :?isFirst ctx
-            :?hasParent ctx :constructParent ctx :null
+            :?hasParent ctx : setLoc(ctx, getParent(ctx).setFocus(construct(ctx, getParent(ctx), NIL))) : null
             :setRights(NIL, left ctx)
         :modifyLefts(
             skip@1,
@@ -485,8 +518,8 @@ remove = \ctx ->
  *   the one next to the focus.
  * @param ctx
  */
-setLefts = \ls, ctx ->
-    modifyLoc(ctx, \loc -> loc.setLeft(ls).setDirty(true));
+setLefts = \ls ctx ->
+    markDirty <| modifyLoc(ctx, \loc -> loc.setLeft(focusList ls));
 
 /**
  * Modify the current lefts of the focus.
@@ -494,7 +527,7 @@ setLefts = \ls, ctx ->
  * @param  f Mapping current lefts to new lefts.
  * @param ctx
  */
-modifyLefts = \f, ctx ->
+modifyLefts = \f ctx ->
     setLefts(f(lefts ctx), ctx);
 
 /**
@@ -503,8 +536,8 @@ modifyLefts = \f, ctx ->
  * @param ls Stream of rights
  * @param ctx
  */
-setRights = \rs, ctx ->
-    modifyLoc(ctx, \loc -> loc.setRight(rs).setDirty(true));
+setRights = \rs ctx ->
+    markDirty <| modifyLoc(ctx, \loc -> loc.setRight(focusList rs));
 
 /**
  * Modify the rights lefts of the focus.
@@ -512,32 +545,32 @@ setRights = \rs, ctx ->
  * @param f Mapping current lefts to new lefts.
  * @param ctx
  */
-modifyRights = \f, ctx ->
+modifyRights = \f ctx ->
     setRights(f(rights ctx), ctx);
 
 /**
  * Insert a sibling to the left of the focus. Stays in the current location.
  */
-insertLeft = \node, ctx ->
+insertLeft = \node ctx ->
     modifyLefts(cons @ node, ctx);
 
 /**
  * Insert a sibling to the right of the focus. Stays in the current location.
  */
-insertRight = \node, ctx ->
+insertRight = \node ctx ->
     modifyRights(cons @ node, ctx);
 
 /**
  * Insert a left child for the focus. Stays in the current location.
  */
-insertChild = \node, ctx ->
+insertChild = \node ctx ->
     ?hasChildren ctx
         :ctx
             |> down
             |> insertLeft @ node
             |> up
         :replace(
-            construct(ctx, extract ctx, cons(node, NIL)),
+            construct(ctx, extract ctx, cons(node, NIL)).focus,
             ctx);
 
 /**
@@ -559,7 +592,7 @@ appendChild := \node, ctx ->
  */
 detach := \ctx ->
     setLoc(ctx,
-        Loc.empty.setFocus(extract ctx));
+        Loc.empty.setFocus(new Focus(extract ctx)));
 
 /* Zipper
  ******************************************************************************/
@@ -573,7 +606,7 @@ detach := \ctx ->
  */
 zipper := \children, constructNode, focus ->
     new Context(
-        Loc.empty.setFocus(focus),
+        Loc.empty.setFocus(new Focus(focus)),
         children,
         constructNode);
 
