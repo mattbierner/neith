@@ -1,8 +1,7 @@
 /*
- * THIS FILE IS AUTO GENERATED FROM 'lib/list.kep'
+ * THIS FILE IS AUTO GENERATED from 'lib/list.kep'
  * DO NOT EDIT
-*/
-define(["require", "exports", "nu-stream/stream", "./zipper"], (function(require, exports, __o, __o0) {
+*/define(["require", "exports", "nu-stream/stream", "./zipper"], (function(require, exports, __o, __o0) {
     "use strict";
     var isStream = __o["isStream"],
         from = __o["from"],

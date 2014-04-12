@@ -94,23 +94,32 @@ Context.prototype.setLoc = \loc =self->
 
 // Focus
 ////////////////////////////////////////
+/**
+ * Focus.
+ * 
+ * This uses mutation internally for caching, but this should not leak out.
+ * 
+ * @param focus Actual focus element.
+ * @param dirty Does the node need to be reconstructed/
+ * @param children Cached child list.
+ */
 var Focus := function \focus dirty children  =self -> {
     self.focus = focus;
     self.dirty = dirty;
-    self.children = children; // cached children value.
+    self.children = children;
 };
 
-Focus.prototype.setDirty = \dirty =self->
-    new Focus(
-        self.focus,
-        dirty,
-        ?dirty : null : self.children); // invalidate
+Focus.prototype.setDirty = \dirty =self-> {
+    self.dirty = dirty;
+    if (dirty)
+        self.children = null; // invalidate
+    return self;
+};
 
-Focus.prototype.setChildren = \children =self->
-    new Focus(
-        self.focus,
-        self.dirty,
-        children);
+Focus.prototype.setChildren = \children =self-> {
+    self.children = children;
+    return self;
+};
 
 var focusList := map @ (new, Focus);
 
@@ -162,10 +171,18 @@ var setSurround = \loc left focus right ->
         left,
         right);
 
-var updateChildren := \loc c ->
-    ?loc.focus.children
-        :loc
-        :loc.setFocus(loc.focus.setChildren(c));
+var getChildren = \ctx -> {
+    if (ctx.loc.focus.children) return ctx.loc.focus.children;
+    
+    var c := focusList <| children ctx;
+    ctx.loc.focus.setChildren(c);
+    return c;
+};
+
+var updateChildren := \loc c -> {
+    loc.focus.setChildren(c);
+    return loc;
+};
 
 /* Internal operations
  ******************************************************************************/
@@ -173,11 +190,11 @@ var getLoc := \ctx -> ctx.loc;
 
 var setLoc := \ctx loc -> ctx.setLoc(loc);
 
-var modifyLoc = \ctx f -> setLoc(ctx, f(getLoc(ctx)));
+var modifyLoc := \ctx f -> setLoc(ctx, f (getLoc ctx));
 
-var getFocus = getLoc \> (.focus);
+var getFocus := getLoc \> (.focus);
 
-var setFocus = \ctx f -> modifyLoc(ctx, \loc -> loc.setFocus(f));
+var setFocus := \ctx f -> modifyLoc(ctx, \loc -> loc.setFocus(f));
 
 var getParent := getLoc \> (.parent); // Current parent, not reconstructed one. May be dirty.
 
@@ -187,21 +204,19 @@ var getRights := getLoc \> (.right);
 
 /* Reconstruction
  ******************************************************************************/
-var dirty := getFocus \> (.dirty);
-
-var markLocDirty := \loc -> let
-    parent = loc.parent
-in
-    ?parent
-        :loc.setParent(parent.setFocus(parent.focus.setDirty(true)))
-        :loc;
+var markLocDirty := \loc -> {
+    var parent := loc.parent;
+    if (parent)
+        parent.focus.setDirty(true);
+    return loc;
+};
 
 var markDirty := \ctx ->
     setLoc(ctx, markLocDirty(ctx.loc));
 
 var construct = \ctx parent children ->
     new Focus(
-        ctx.constructNode(parent, children),
+        ctx.constructNode(parent, unFocusList <| children),
         false,
         children);
 
@@ -209,9 +224,9 @@ var constructParent = \ctx ->
     construct(ctx,
         getParent(ctx).focus.focus,
         append(
-            reverse <| lefts ctx,
-            cons(extract ctx, NIL),
-            rights ctx));
+            reverse <| getLefts ctx,
+            cons(getFocus ctx, NIL),
+            getRights ctx));
 
 var moveParent := \ctx -> let
     parent = getParent ctx
@@ -219,6 +234,7 @@ in
     ?parent && parent.focus.dirty
         :markLocDirty <| parent.setFocus(constructParent(ctx))
         :parent;
+
 
 /* Queries
  ******************************************************************************/
@@ -266,14 +282,19 @@ parent := moveParent \> extract;
  * @return Stream of children, may be infinite.
  */
 children = \ctx ->
-    (ctx.loc.focus.children || ctx.children(extract ctx));
+    ctx.children(extract ctx);
 
 /* Node Predicates
  ******************************************************************************/
 /**
+ * Is the focus a leaf node?
+ */
+isLeaf = isEmpty <\ getChildren;
+
+/**
  * Does the focus have any children?
  */
-hasChildren = (!) <\ isEmpty <\ children;
+hasChildren = (!) <\ isLeaf;
 
 /**
  * Does the focus have a parent?
@@ -289,11 +310,6 @@ isRoot = (!) <\ hasParent;
  * Is the focus a child node?
  */
 isChild = hasParent;
-
-/**
- * Is the focus a leaf node?
- */
-isLeaf = (!) <\ hasChildren;
 
 /**
  * Is the focus the leftmost of its siblings?
@@ -323,16 +339,16 @@ up = \ctx ->
  * Returns null if the focus has no children.
  */
 down = \ctx -> let
-    cs = children ctx
+    cs = getChildren ctx
 in
     ?isEmpty cs
         :null
     :setLoc(ctx,
         new Loc(
-            new Focus(first cs),
-            updateChildren(getLoc ctx, cs),
+            first cs,
+            getLoc ctx,
             NIL,
-            focusList <| rest cs));
+            rest cs));
 
 /**
  * Move to the left sibling of the focus.
@@ -505,11 +521,13 @@ modify = \f, ctx ->
 remove = \ctx ->
     ?isLast ctx
         :?isFirst ctx
-            :?hasParent ctx : setLoc(ctx, getParent(ctx).setFocus(construct(ctx, getParent(ctx), NIL))) : null
-            :setRights(NIL, left ctx)
-        :modifyLefts(
-            skip@1,
-            right ctx);
+            :?hasParent ctx
+                :setLoc(ctx, getParent(ctx).setFocus(construct(ctx, getParent(ctx), NIL)))
+                :null
+        :setRights(NIL, left ctx)
+    :modifyLefts(
+        skip@1,
+        right ctx);
 
 /**
  * Set the lefts of the focus.
@@ -570,7 +588,7 @@ insertChild = \node ctx ->
             |> insertLeft @ node
             |> up
         :replace(
-            construct(ctx, extract ctx, cons(node, NIL)).focus,
+            construct(ctx, extract ctx, cons(new Focus(node), NIL)).focus,
             ctx);
 
 /**

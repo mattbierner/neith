@@ -29,7 +29,7 @@ in {
  *   into the stream and `zipper.up` to rebuild it.
  */
 listZipper = let
-    children = \s -> ?isStream(s) :s :NIL,
+    children = \s -> ?isStream s : s : NIL,
     construct = \_ children -> children
 in
     zipper@(
@@ -60,7 +60,7 @@ listZipperIn = \lefts, focus, rights ->
  * @param arr Array starting point.
  */
 arrayZipper = let
-    children = \s -> ?Array.isArray(s) :from(s) :NIL,
+    children = \s -> ?Array.isArray s : from s : NIL,
     construct = \_ children -> toArray(children)
 in
     zipper@(
