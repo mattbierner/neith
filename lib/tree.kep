@@ -139,7 +139,7 @@ in
  * @param edge Label of edge to move on.
  * @param ctx
  */
-child = \edge, ctx ->
+child = \edge ctx ->
     down ctx
         |> sibling @ edge;
 

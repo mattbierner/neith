@@ -3,15 +3,13 @@
  * DO NOT EDIT
 */define(["require", "exports", "./zipper", "nu-stream/stream"], (function(require, exports, zipper, stream) {
     "use strict";
-    var right = zipper["right"],
+    var Pair, pairKey, pairValue, edgePath, nodePath, node, edge, childNode, parentNode, childNodes, edges,
+            child, sibling, setNode, modifyNode, setEdge, modifyEdge, insertLeft, insertRight, insertChild,
+            appendChild, treeZipper, right = zipper["right"],
         left = zipper["left"],
-        up = zipper["up"],
         down = zipper["down"],
         foldl = stream["foldl"],
-        map = stream["map"],
-        Pair, pairKey, pairValue, edgePath, nodePath, node, edge, childNode, parentNode, childNodes, edges,
-            child, sibling, setNode, modifyNode, setEdge, modifyEdge, insertLeft, insertRight, insertChild,
-            appendChild, treeZipper;
+        map = stream["map"];
     (Pair = (function(key, value) {
         return ({
             key: key,
@@ -25,53 +23,53 @@
         return x.value;
     }));
     var x = zipper.extract;
-    (node = (function(x0) {
-        var x1 = x(x0);
-        return x1.value;
+    (node = (function(z) {
+        var x0 = x(z);
+        return x0.value;
     }));
     var x0 = zipper.extract;
-    (edge = (function(x1) {
-        var x2 = x0(x1);
-        return x2.key;
+    (edge = (function(z) {
+        var x1 = x0(z);
+        return x1.key;
     }));
     var x1 = zipper.path,
         y = map.bind(null, pairValue);
-    (nodePath = (function(x2) {
-        return y(x1(x2));
+    (nodePath = (function(z) {
+        return y(x1(z));
     }));
     var x2 = zipper.path,
         y0 = map.bind(null, pairKey);
-    (edgePath = (function(x3) {
-        return y0(x2(x3));
+    (edgePath = (function(z) {
+        return y0(x2(z));
     }));
     var x3 = zipper.parent;
-    (parentNode = (function(x4) {
-        var x5 = x3(x4);
-        return x5.value;
+    (parentNode = (function(z) {
+        var x4 = x3(z);
+        return x4.value;
     }));
     var x4 = zipper.children,
         y1 = map.bind(null, pairValue);
-    (childNodes = (function(x5) {
-        return y1(x4(x5));
+    (childNodes = (function(z) {
+        return y1(x4(z));
     }));
     var x5 = zipper.children,
         y2 = map.bind(null, pairKey);
-    (edges = (function(x6) {
-        return y2(x5(x6));
+    (edges = (function(z) {
+        return y2(x5(z));
     }));
     (childNode = (function(edge0, ctx) {
         var c = child(edge0, ctx);
         return (c && node(c));
     }));
     (sibling = (function(e, ctx) {
-        var op, op0, ctx0;
-        return (((op = left), zipper.whilst((function(x6) {
-            var y3 = edge(x6);
+        var ctx0;
+        return (zipper.whilst((function(z) {
+            var y3 = edge(z);
             return (e !== y3);
-        }), op, ctx)) || ((op0 = right), (ctx0 = right(ctx)), zipper.whilst((function(x6) {
-            var y3 = edge(x6);
+        }), left, ctx) || ((ctx0 = right(ctx)), zipper.whilst((function(z) {
+            var y3 = edge(z);
             return (e !== y3);
-        }), op0, ctx0)));
+        }), right, ctx0)));
     }));
     (child = (function(edge0, ctx) {
         return sibling(edge0, down(ctx));
