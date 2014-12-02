@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 1.6.6 - December 1, 2014
+* Updated to use Khepri V1.X 
+
 ## 1.6.5 - April 12, 2014
 * Further improvements to reduce number of calls to `children`.
 

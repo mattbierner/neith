@@ -1,7 +1,8 @@
 /*
- * THIS FILE IS AUTO GENERATED from 'lib/tree.kep'
+ * THIS FILE IS AUTO GENERATED FROM 'lib/tree.kep'
  * DO NOT EDIT
-*/define(["require", "exports", "./zipper", "nu-stream/stream"], (function(require, exports, zipper, stream) {
+*/
+define(["require", "exports", "./zipper", "nu-stream/stream"], (function(require, exports, zipper, stream) {
     "use strict";
     var Pair, pairKey, pairValue, edgePath, nodePath, node, edge, childNode, parentNode, childNodes, edges,
             child, sibling, setNode, modifyNode, setEdge, modifyEdge, insertLeft, insertRight, insertChild,

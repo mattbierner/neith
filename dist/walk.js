@@ -1,15 +1,16 @@
 /*
- * THIS FILE IS AUTO GENERATED from 'lib/walk.kep'
+ * THIS FILE IS AUTO GENERATED FROM 'lib/walk.kep'
  * DO NOT EDIT
-*/define(["require", "exports", "./zipper"], (function(require, exports, __o) {
+*/
+define(["require", "exports", "./zipper"], (function(require, exports, __o) {
     "use strict";
-    var isLeaf = __o["isLeaf"],
+    var forChildren, walk, postWalk, preWalk, isLeaf = __o["isLeaf"],
         up = __o["up"],
         down = __o["down"],
         right = __o["right"],
         seq = __o["seq"],
         whilst = __o["whilst"],
-        forChildren, walk, postWalk, preWalk, id = (function(x) {
+        id = (function(x) {
             return x;
         });
     (forChildren = (function(f, ctx) {

@@ -1,18 +1,18 @@
 /*
- * THIS FILE IS AUTO GENERATED from 'lib/list.kep'
+ * THIS FILE IS AUTO GENERATED FROM 'lib/list.kep'
  * DO NOT EDIT
-*/"use strict";
+*/
+"use strict";
 var __o = require("nu-stream")["stream"],
-    isStream = __o["isStream"],
+    __o0 = require("./zipper"),
+    listZipper, listZipperIn, arrayZipper, isStream = __o["isStream"],
     from = __o["from"],
-    map = __o["map"],
     toArray = __o["toArray"],
     NIL = __o["NIL"],
-    __o0 = require("./zipper"),
     zipper = __o0["zipper"],
     setLefts = __o0["setLefts"],
     setRights = __o0["setRights"],
-    listZipper, listZipperIn, arrayZipper, children = (function(s) {
+    children = (function(s) {
         return (isStream(s) ? s : NIL);
     }),
     construct = (function(_, children0) {

@@ -416,7 +416,7 @@ seq = let
         \ctx ->
             (ctx && let next = c ctx in (next && p next))
 in
-    \ops(...) ->
+    \-ops(...)->
         reduceRight(ops, and);
 
 /**
@@ -429,7 +429,7 @@ any = let
         \ctx ->
             (ctx && (c ctx || p ctx))
 in
-    \ops(...) ->
+    \-ops(...)->
         reduceRight(ops, or);
 
 /**
